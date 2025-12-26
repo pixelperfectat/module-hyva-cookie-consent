@@ -1,0 +1,182 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
+    <system>
+        <!-- Cookie Consent settings under Web section -->
+        <section id="web">
+            <group id="hyva_cookie_consent" translate="label" sortOrder="100" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Cookie Consent (Hyva)</label>
+
+                <!-- General Settings -->
+                <group id="general" translate="label" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>General Settings</label>
+                    <field id="enabled" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Enable Cookie Consent</label>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    </field>
+                    <field id="cookie_lifetime" translate="label comment" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Consent Cookie Lifetime (days)</label>
+                        <comment>How long to remember the user's consent choice. Default: 365</comment>
+                        <validate>validate-digits</validate>
+                    </field>
+                    <field id="consent_version" translate="label comment" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Consent Version</label>
+                        <comment>Increment to force users to re-consent after policy changes</comment>
+                        <validate>validate-digits</validate>
+                    </field>
+                </group>
+
+                <!-- UI Settings -->
+                <group id="ui" translate="label" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>UI Settings</label>
+                    <field id="banner_style" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Banner Style</label>
+                        <source_model>Pixelperfect\HyvaCookieConsent\Model\Config\Source\BannerStyle</source_model>
+                    </field>
+                    <field id="floating_button_position" translate="label" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Floating Button Position</label>
+                        <source_model>Pixelperfect\HyvaCookieConsent\Model\Config\Source\Position</source_model>
+                    </field>
+                </group>
+
+                <!-- Text Settings -->
+                <group id="text" translate="label" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Text Customization</label>
+                    <field id="banner_headline" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Banner Headline</label>
+                    </field>
+                    <field id="banner_description" translate="label" type="textarea" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Banner Description</label>
+                    </field>
+                    <field id="privacy_policy_url" translate="label comment" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Privacy Policy URL</label>
+                        <comment>Relative or absolute URL to your privacy policy page</comment>
+                    </field>
+                </group>
+            </group>
+        </section>
+
+        <!-- Services configuration in separate section -->
+        <section id="hyva_cookie_consent" translate="label" sortOrder="1100" showInDefault="1" showInWebsite="1" showInStore="1">
+            <label>Cookie Consent Services</label>
+            <tab>general</tab>
+            <resource>Pixelperfect_HyvaCookieConsent::config</resource>
+
+            <group id="services" translate="label" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Tracking Services</label>
+                <comment>Enable and configure individual tracking services</comment>
+
+                <!-- Google Tag Manager -->
+                <group id="google_tag_manager" translate="label" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Google Tag Manager</label>
+                    <field id="enabled" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Enable</label>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    </field>
+                    <field id="container_id" translate="label comment" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Container ID</label>
+                        <comment><![CDATA[e.g., GTM-XXXXXXX]]></comment>
+                        <depends>
+                            <field id="enabled">1</field>
+                        </depends>
+                    </field>
+                    <field id="loading_strategy" translate="label comment" type="select" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Loading Strategy</label>
+                        <source_model>Pixelperfect\HyvaCookieConsent\Model\Config\Source\GtmStrategy</source_model>
+                        <comment><![CDATA[<strong>Strict:</strong> Block GTM until consent given<br/><strong>Infrastructure:</strong> Load GTM immediately, push consent to dataLayer (use when GTM tags have their own consent-based triggers)]]></comment>
+                        <depends>
+                            <field id="enabled">1</field>
+                        </depends>
+                    </field>
+                </group>
+
+                <!-- Google Analytics 4 -->
+                <group id="google_analytics_4" translate="label" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Google Analytics 4</label>
+                    <field id="enabled" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Enable</label>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    </field>
+                    <field id="measurement_id" translate="label comment" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Measurement ID</label>
+                        <comment><![CDATA[e.g., G-XXXXXXXXXX]]></comment>
+                        <depends>
+                            <field id="enabled">1</field>
+                        </depends>
+                    </field>
+                </group>
+
+                <!-- Facebook Pixel -->
+                <group id="facebook_pixel" translate="label" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Facebook Pixel</label>
+                    <field id="enabled" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Enable</label>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    </field>
+                    <field id="pixel_id" translate="label comment" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Pixel ID</label>
+                        <comment><![CDATA[e.g., 1234567890123456]]></comment>
+                        <depends>
+                            <field id="enabled">1</field>
+                        </depends>
+                    </field>
+                </group>
+
+                <!-- Microsoft Clarity -->
+                <group id="microsoft_clarity" translate="label" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Microsoft Clarity</label>
+                    <field id="enabled" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Enable</label>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    </field>
+                    <field id="project_id" translate="label comment" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Project ID</label>
+                        <comment><![CDATA[e.g., abcdefghij]]></comment>
+                        <depends>
+                            <field id="enabled">1</field>
+                        </depends>
+                    </field>
+                </group>
+
+                <!-- Hotjar -->
+                <group id="hotjar" translate="label" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Hotjar</label>
+                    <field id="enabled" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Enable</label>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    </field>
+                    <field id="site_id" translate="label comment" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Site ID</label>
+                        <comment><![CDATA[e.g., 1234567]]></comment>
+                        <depends>
+                            <field id="enabled">1</field>
+                        </depends>
+                    </field>
+                </group>
+
+                <!-- Matomo -->
+                <group id="matomo" translate="label" sortOrder="60" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Matomo</label>
+                    <field id="enabled" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Enable</label>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    </field>
+                    <field id="tracker_url" translate="label comment" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Tracker URL</label>
+                        <comment><![CDATA[e.g., https://analytics.example.com/]]></comment>
+                        <depends>
+                            <field id="enabled">1</field>
+                        </depends>
+                    </field>
+                    <field id="site_id" translate="label comment" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Site ID</label>
+                        <comment><![CDATA[e.g., 1]]></comment>
+                        <depends>
+                            <field id="enabled">1</field>
+                        </depends>
+                    </field>
+                </group>
+            </group>
+        </section>
+    </system>
+</config>

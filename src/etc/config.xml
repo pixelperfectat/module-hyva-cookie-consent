@@ -1,0 +1,57 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
+    <default>
+        <!-- General Cookie Consent Settings (under Web section) -->
+        <web>
+            <hyva_cookie_consent>
+                <general>
+                    <enabled>0</enabled>
+                    <cookie_lifetime>365</cookie_lifetime>
+                    <consent_version>1</consent_version>
+                </general>
+                <ui>
+                    <banner_style>modal</banner_style>
+                    <floating_button_position>left</floating_button_position>
+                </ui>
+                <text>
+                    <banner_headline>Cookie Settings</banner_headline>
+                    <banner_description>We use cookies to enhance your browsing experience, analyze site traffic, and personalize content. By clicking "Accept All", you consent to our use of cookies.</banner_description>
+                    <privacy_policy_url>/privacy-policy</privacy_policy_url>
+                </text>
+            </hyva_cookie_consent>
+        </web>
+
+        <!-- Services Configuration -->
+        <hyva_cookie_consent>
+            <services>
+                <google_tag_manager>
+                    <enabled>0</enabled>
+                    <container_id></container_id>
+                    <loading_strategy>strict</loading_strategy>
+                </google_tag_manager>
+                <google_analytics_4>
+                    <enabled>0</enabled>
+                    <measurement_id></measurement_id>
+                </google_analytics_4>
+                <facebook_pixel>
+                    <enabled>0</enabled>
+                    <pixel_id></pixel_id>
+                </facebook_pixel>
+                <microsoft_clarity>
+                    <enabled>0</enabled>
+                    <project_id></project_id>
+                </microsoft_clarity>
+                <hotjar>
+                    <enabled>0</enabled>
+                    <site_id></site_id>
+                </hotjar>
+                <matomo>
+                    <enabled>0</enabled>
+                    <tracker_url></tracker_url>
+                    <site_id></site_id>
+                </matomo>
+            </services>
+        </hyva_cookie_consent>
+    </default>
+</config>
