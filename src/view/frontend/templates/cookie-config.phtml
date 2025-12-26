@@ -1,0 +1,233 @@
+<?php
+
+declare(strict_types=1);
+
+use Hyva\Theme\Model\ViewModelRegistry;
+use Hyva\Theme\ViewModel\HyvaCsp;
+use Magento\Framework\Escaper;
+use Pixelperfect\HyvaCookieConsent\ViewModel\CookieConsent;
+
+/** @var Escaper $escaper */
+/** @var ViewModelRegistry $viewModels */
+
+$hyvaCsp = $viewModels->require(HyvaCsp::class);
+$consentViewModel = $viewModels->require(CookieConsent::class);
+
+if (!$consentViewModel->isEnabled()) {
+    return;
+}
+
+$categories = $consentViewModel->getCategories();
+$cookieLifetime = $consentViewModel->getCookieLifetime();
+$consentVersion = $consentViewModel->getConsentVersion();
+$gtmInfrastructureMode = $consentViewModel->isGtmInfrastructureMode();
+?>
+
+<script>
+    'use strict';
+
+    // Set up Hyva cookie consent integration
+    window.cookie_consent_config = <?= /* @noEscape */ $consentViewModel->getCookieConsentConfigJson() ?>;
+    window.cookie_consent_groups = <?= /* @noEscape */ $consentViewModel->getInitialConsentGroupsJson() ?>;
+
+    // Google Consent Mode v2 - Set default BEFORE GTM loads
+    // This ensures GTM/GA4 respect consent from the start
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+
+    (function() {
+        // Check for saved consent
+        const cookieName = 'hyva_cookie_consent';
+        const savedCookie = document.cookie.split('; ').find(c => c.startsWith(cookieName + '='));
+        let savedConsent = null;
+
+        if (savedCookie) {
+            try {
+                savedConsent = JSON.parse(decodeURIComponent(savedCookie.split('=')[1]));
+            } catch (e) {}
+        }
+
+        // Map our categories to Google Consent Mode v2
+        const getConsentState = (category) => {
+            if (savedConsent && savedConsent.categories && savedConsent.version === <?= (int) $consentVersion ?>) {
+                return savedConsent.categories[category] ? 'granted' : 'denied';
+            }
+            return 'denied';
+        };
+
+        // Set default consent state
+        gtag('consent', 'default', {
+            'ad_storage': getConsentState('marketing'),
+            'ad_user_data': getConsentState('marketing'),
+            'ad_personalization': getConsentState('marketing'),
+            'analytics_storage': getConsentState('analytics'),
+            'functionality_storage': getConsentState('preferences'),
+            'personalization_storage': getConsentState('preferences'),
+            'security_storage': 'granted'
+        });
+    })();
+
+    // Alpine.js component initialization function - CSP Strict compatible
+    function initHyvaCookieConsent() {
+        const COOKIE_NAME = 'hyva_cookie_consent';
+        const CONSENT_VERSION = <?= (int) $consentVersion ?>;
+        const COOKIE_LIFETIME = <?= (int) $cookieLifetime ?>;
+        const GTM_INFRASTRUCTURE_MODE = <?= $gtmInfrastructureMode ? 'true' : 'false' ?>;
+
+        return {
+            showBanner: false,
+            showDetails: false,
+            showCookieDetails: false,
+            consent: {
+                necessary: true,
+                <?php foreach ($categories as $category): ?>
+                <?php if (!$category->isRequired()): ?>
+                <?= $escaper->escapeJs($category->getCode()) ?>: false,
+                <?php endif; ?>
+                <?php endforeach; ?>
+            },
+
+            init() {
+                const saved = this.getSavedConsent();
+                if (saved && saved.version === CONSENT_VERSION) {
+                    this.consent = { ...this.consent, ...saved.categories };
+                    this.applyConsent();
+                } else {
+                    this.showBanner = true;
+                }
+
+                // Listen for settings button click
+                window.addEventListener('open-cookie-settings', () => {
+                    this.showBanner = true;
+                    this.showDetails = true;
+                });
+            },
+
+            getSavedConsent() {
+                const cookie = hyva.getCookie(COOKIE_NAME);
+                if (cookie) {
+                    try {
+                        return JSON.parse(decodeURIComponent(cookie));
+                    } catch (e) {
+                        return null;
+                    }
+                }
+                return null;
+            },
+
+            saveConsent() {
+                const data = {
+                    version: CONSENT_VERSION,
+                    categories: this.consent,
+                    timestamp: Date.now()
+                };
+                hyva.setCookie(COOKIE_NAME, encodeURIComponent(JSON.stringify(data)), COOKIE_LIFETIME);
+            },
+
+            toggleCategory(category) {
+                this.consent[category] = !this.consent[category];
+            },
+
+            acceptAll() {
+                Object.keys(this.consent).forEach(key => {
+                    this.consent[key] = true;
+                });
+                this.saveAndApply();
+            },
+
+            rejectAll() {
+                Object.keys(this.consent).forEach(key => {
+                    if (key !== 'necessary') {
+                        this.consent[key] = false;
+                    }
+                });
+                this.saveAndApply();
+            },
+
+            savePreferences() {
+                this.saveAndApply();
+            },
+
+            saveAndApply() {
+                this.saveConsent();
+                this.applyConsent();
+                this.showBanner = false;
+                this.showDetails = false;
+            },
+
+            applyConsent() {
+                // Update Hyva's cookie_consent_groups
+                Object.keys(this.consent).forEach(category => {
+                    window.cookie_consent_groups[category] = this.consent[category];
+                });
+
+                // Dispatch event for Hyva's cookie system
+                window.dispatchEvent(new CustomEvent('user-allowed-save-cookie'));
+
+                // Dispatch custom event for external listeners
+                window.dispatchEvent(new CustomEvent('cookie-consent-updated', {
+                    detail: this.consent
+                }));
+
+                // Google Consent Mode v2 - Update consent state
+                // This is the standard that GTM/GA4 automatically respect
+                gtag('consent', 'update', {
+                    'ad_storage': this.consent.marketing ? 'granted' : 'denied',
+                    'ad_user_data': this.consent.marketing ? 'granted' : 'denied',
+                    'ad_personalization': this.consent.marketing ? 'granted' : 'denied',
+                    'analytics_storage': this.consent.analytics ? 'granted' : 'denied',
+                    'functionality_storage': this.consent.preferences ? 'granted' : 'denied',
+                    'personalization_storage': this.consent.preferences ? 'granted' : 'denied',
+                    'security_storage': 'granted'
+                });
+
+                // Also push custom event for GTM triggers that use our format
+                if (GTM_INFRASTRUCTURE_MODE && window.dataLayer) {
+                    const consentEvent = { event: 'consent_update' };
+                    Object.keys(this.consent).forEach(category => {
+                        consentEvent['consent_' + category] = this.consent[category];
+                    });
+                    window.dataLayer.push(consentEvent);
+                }
+
+                // Activate consented scripts
+                this.activateScripts();
+            },
+
+            activateScripts() {
+                const consentedCategories = Object.keys(this.consent).filter(k => this.consent[k]);
+
+                // Activate external scripts (type="text/plain" with data-consent-src)
+                document.querySelectorAll('script[data-consent-category][data-consent-src]').forEach(blocked => {
+                    const category = blocked.dataset.consentCategory;
+                    if (consentedCategories.includes(category)) {
+                        const script = document.createElement('script');
+                        script.src = blocked.dataset.consentSrc;
+                        script.async = true;
+                        blocked.parentNode.replaceChild(script, blocked);
+                    }
+                });
+
+                // Activate inline scripts (template pattern)
+                document.querySelectorAll('template[data-consent-category]').forEach(template => {
+                    const category = template.dataset.consentCategory;
+                    if (consentedCategories.includes(category)) {
+                        const content = template.content.cloneNode(true);
+                        template.parentNode.insertBefore(content, template);
+                        template.remove();
+                    }
+                });
+            },
+
+            hasConsent(category) {
+                return this.consent[category] === true;
+            }
+        };
+    }
+
+    // Register Alpine component - CSP Strict compatible (no parentheses in x-data)
+    document.addEventListener('alpine:init', () => {
+        Alpine.data('hyvaCookieConsent', initHyvaCookieConsent);
+    }, { once: true });
+</script>
+<?php $hyvaCsp->registerInlineScript() ?>
