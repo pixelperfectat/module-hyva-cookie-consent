@@ -1,0 +1,19 @@
+{
+    "name": "pixelperfectat/module-hyva-cookie-consent",
+    "description": "GDPR/ePrivacy-compliant cookie consent management for Hyva theme",
+    "type": "magento2-module",
+    "license": "proprietary",
+    "require": {
+        "php": "^8.3",
+        "magento/framework": "^103.0",
+        "magento/module-cookie": "*",
+        "magento/module-csp": "*",
+        "hyva-themes/magento2-theme-module": "^1.0"
+    },
+    "autoload": {
+        "files": ["src/registration.php"],
+        "psr-4": {
+            "Pixelperfect\\HyvaCookieConsent\\": "src/"
+        }
+    }
+}
