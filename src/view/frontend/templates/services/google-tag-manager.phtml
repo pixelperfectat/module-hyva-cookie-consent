@@ -1,0 +1,105 @@
+<?php
+
+declare(strict_types=1);
+
+use Hyva\Theme\Model\ViewModelRegistry;
+use Hyva\Theme\ViewModel\HyvaCsp;
+use Magento\Framework\Escaper;
+use Pixelperfect\HyvaCookieConsent\Api\Data\ServiceInterface;
+use Pixelperfect\HyvaCookieConsent\ViewModel\CookieConsent;
+
+/** @var Escaper $escaper */
+/** @var ServiceInterface $service */
+/** @var ViewModelRegistry $viewModels */
+
+$service = $block->getData('service');
+$viewModels = $block->getData('view_models');
+
+$hyvaCsp = $viewModels->require(HyvaCsp::class);
+$consentViewModel = $viewModels->require(CookieConsent::class);
+
+$containerId = $service->getConfigValue('container_id');
+$loadingStrategy = $service->getConfigValue('loading_strategy') ?: 'strict';
+
+if (empty($containerId)) {
+    return;
+}
+
+$category = $service->getCategory();
+?>
+
+<?php if ($loadingStrategy === 'infrastructure'): ?>
+<!-- Google Tag Manager - Infrastructure Mode: Load immediately, push consent to dataLayer -->
+<script>
+    window.dataLayer = window.dataLayer || [];
+
+    // Push initial consent state
+    (function() {
+        const savedConsent = hyva.getCookie('hyva_cookie_consent');
+        let consent = { necessary: true, analytics: false, marketing: false, preferences: false };
+
+        if (savedConsent) {
+            try {
+                const parsed = JSON.parse(decodeURIComponent(savedConsent));
+                if (parsed.categories) {
+                    consent = { ...consent, ...parsed.categories };
+                }
+            } catch (e) {}
+        }
+
+        window.dataLayer.push({
+            event: 'consent_default',
+            consent_necessary: true,
+            consent_analytics: consent.analytics,
+            consent_marketing: consent.marketing,
+            consent_preferences: consent.preferences
+        });
+    })();
+
+    // GTM snippet
+    (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','<?= $escaper->escapeJs($containerId) ?>');
+</script>
+<?php $hyvaCsp->registerInlineScript() ?>
+
+<!-- Google Tag Manager (noscript) - Infrastructure Mode -->
+<noscript>
+    <iframe src="https://www.googletagmanager.com/ns.html?id=<?= $escaper->escapeHtmlAttr($containerId) ?>"
+            height="0" width="0" style="display:none;visibility:hidden"></iframe>
+</noscript>
+
+<?php else: ?>
+<!-- Google Tag Manager - Strict Mode: Block until consent -->
+<template data-consent-category="<?= $escaper->escapeHtmlAttr($category) ?>">
+    <script>
+        window.dataLayer = window.dataLayer || [];
+
+        // Push consent granted event
+        window.dataLayer.push({
+            event: 'consent_granted',
+            consent_necessary: true,
+            consent_analytics: true,
+            consent_marketing: window.cookie_consent_groups?.marketing || false,
+            consent_preferences: window.cookie_consent_groups?.preferences || false
+        });
+
+        // GTM snippet
+        (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+        new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+        j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+        'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+        })(window,document,'script','dataLayer','<?= $escaper->escapeJs($containerId) ?>');
+    </script>
+</template>
+
+<!-- Google Tag Manager (noscript) - Hidden until consent -->
+<template data-consent-category="<?= $escaper->escapeHtmlAttr($category) ?>">
+    <noscript>
+        <iframe src="https://www.googletagmanager.com/ns.html?id=<?= $escaper->escapeHtmlAttr($containerId) ?>"
+                height="0" width="0" style="display:none;visibility:hidden"></iframe>
+    </noscript>
+</template>
+<?php endif; ?>

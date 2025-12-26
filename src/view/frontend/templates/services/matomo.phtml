@@ -1,0 +1,51 @@
+<?php
+
+declare(strict_types=1);
+
+use Hyva\Theme\Model\ViewModelRegistry;
+use Hyva\Theme\ViewModel\HyvaCsp;
+use Magento\Framework\Escaper;
+use Pixelperfect\HyvaCookieConsent\Api\Data\ServiceInterface;
+
+/** @var Escaper $escaper */
+/** @var ServiceInterface $service */
+/** @var ViewModelRegistry $viewModels */
+
+$service = $block->getData('service');
+$viewModels = $block->getData('view_models');
+
+$hyvaCsp = $viewModels->require(HyvaCsp::class);
+
+$trackerUrl = $service->getConfigValue('tracker_url');
+$siteId = $service->getConfigValue('site_id');
+
+if (empty($trackerUrl) || empty($siteId)) {
+    return;
+}
+
+// Ensure tracker URL ends with /
+$trackerUrl = rtrim($trackerUrl, '/') . '/';
+
+$category = $service->getCategory();
+?>
+
+<!-- Matomo - Blocked until consent -->
+<template data-consent-category="<?= $escaper->escapeHtmlAttr($category) ?>">
+    <script>
+        var _paq = window._paq = window._paq || [];
+        _paq.push(['trackPageView']);
+        _paq.push(['enableLinkTracking']);
+        (function() {
+            var u="<?= $escaper->escapeJs($trackerUrl) ?>";
+            _paq.push(['setTrackerUrl', u+'matomo.php']);
+            _paq.push(['setSiteId', '<?= $escaper->escapeJs($siteId) ?>']);
+            var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
+            g.async=true; g.src=u+'matomo.js'; s.parentNode.insertBefore(g,s);
+        })();
+    </script>
+    <noscript>
+        <img referrerpolicy="no-referrer-when-downgrade"
+             src="<?= $escaper->escapeUrl($trackerUrl) ?>matomo.php?idsite=<?= $escaper->escapeUrl($siteId) ?>&rec=1"
+             style="border:0" alt=""/>
+    </noscript>
+</template>

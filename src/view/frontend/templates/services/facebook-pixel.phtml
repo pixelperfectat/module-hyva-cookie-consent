@@ -1,0 +1,46 @@
+<?php
+
+declare(strict_types=1);
+
+use Hyva\Theme\Model\ViewModelRegistry;
+use Hyva\Theme\ViewModel\HyvaCsp;
+use Magento\Framework\Escaper;
+use Pixelperfect\HyvaCookieConsent\Api\Data\ServiceInterface;
+
+/** @var Escaper $escaper */
+/** @var ServiceInterface $service */
+/** @var ViewModelRegistry $viewModels */
+
+$service = $block->getData('service');
+$viewModels = $block->getData('view_models');
+
+$hyvaCsp = $viewModels->require(HyvaCsp::class);
+
+$pixelId = $service->getConfigValue('pixel_id');
+
+if (empty($pixelId)) {
+    return;
+}
+
+$category = $service->getCategory();
+?>
+
+<!-- Facebook Pixel - Blocked until consent -->
+<template data-consent-category="<?= $escaper->escapeHtmlAttr($category) ?>">
+    <script>
+        !function(f,b,e,v,n,t,s)
+        {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+        n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+        if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+        n.queue=[];t=b.createElement(e);t.async=!0;
+        t.src=v;s=b.getElementsByTagName(e)[0];
+        s.parentNode.insertBefore(t,s)}(window, document,'script',
+        'https://connect.facebook.net/en_US/fbevents.js');
+        fbq('init', '<?= $escaper->escapeJs($pixelId) ?>');
+        fbq('track', 'PageView');
+    </script>
+    <noscript>
+        <img height="1" width="1" style="display:none"
+             src="https://www.facebook.com/tr?id=<?= $escaper->escapeUrl($pixelId) ?>&ev=PageView&noscript=1"/>
+    </noscript>
+</template>

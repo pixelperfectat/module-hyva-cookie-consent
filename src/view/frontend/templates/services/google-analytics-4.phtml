@@ -1,0 +1,43 @@
+<?php
+
+declare(strict_types=1);
+
+use Hyva\Theme\Model\ViewModelRegistry;
+use Hyva\Theme\ViewModel\HyvaCsp;
+use Magento\Framework\Escaper;
+use Pixelperfect\HyvaCookieConsent\Api\Data\ServiceInterface;
+
+/** @var Escaper $escaper */
+/** @var ServiceInterface $service */
+/** @var ViewModelRegistry $viewModels */
+
+$service = $block->getData('service');
+$viewModels = $block->getData('view_models');
+
+$hyvaCsp = $viewModels->require(HyvaCsp::class);
+
+$measurementId = $service->getConfigValue('measurement_id');
+
+if (empty($measurementId)) {
+    return;
+}
+
+$category = $service->getCategory();
+?>
+
+<!-- Google Analytics 4 - Blocked until consent -->
+<script type="text/plain"
+        data-consent-category="<?= $escaper->escapeHtmlAttr($category) ?>"
+        data-consent-src="https://www.googletagmanager.com/gtag/js?id=<?= $escaper->escapeUrl($measurementId) ?>">
+</script>
+
+<template data-consent-category="<?= $escaper->escapeHtmlAttr($category) ?>">
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', '<?= $escaper->escapeJs($measurementId) ?>', {
+            'anonymize_ip': true
+        });
+    </script>
+</template>
