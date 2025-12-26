@@ -264,6 +264,52 @@ class CookieConsent implements ArgumentInterface
     }
 
     /**
+     * Get cookie patterns grouped by category for JavaScript deletion logic
+     *
+     * Used to delete first-party cookies when consent is revoked for a category.
+     * Returns cookie name patterns (including wildcards like _ga_*) grouped by category.
+     *
+     * @return string JSON encoded cookie patterns by category
+     */
+    public function getCookiePatternsForDeletionJson(): string
+    {
+        $patterns = [];
+
+        foreach ($this->servicePool->getEnabledServices() as $service) {
+            $category = $service->getCategory();
+            if (!isset($patterns[$category])) {
+                $patterns[$category] = [];
+            }
+
+            foreach ($service->getCookies() as $cookie) {
+                $cookieName = $cookie['name'] ?? '';
+                if (!empty($cookieName) && !in_array($cookieName, $patterns[$category], true)) {
+                    $patterns[$category][] = $cookieName;
+                }
+            }
+        }
+
+        // Add standard Magento cookies for preferences category
+        if (!isset($patterns['preferences'])) {
+            $patterns['preferences'] = [];
+        }
+        $preferenceCookies = [
+            'recently_viewed_product',
+            'recently_viewed_product_previous',
+            'recently_compared_product',
+            'recently_compared_product_previous',
+            'product_data_storage'
+        ];
+        foreach ($preferenceCookies as $cookie) {
+            if (!in_array($cookie, $patterns['preferences'], true)) {
+                $patterns['preferences'][] = $cookie;
+            }
+        }
+
+        return $this->jsonSerializer->serialize($patterns);
+    }
+
+    /**
      * Get service pool instance
      *
      * @return ServicePool

@@ -21,6 +21,7 @@ $categories = $consentViewModel->getCategories();
 $cookieLifetime = $consentViewModel->getCookieLifetime();
 $consentVersion = $consentViewModel->getConsentVersion();
 $gtmInfrastructureMode = $consentViewModel->isGtmInfrastructureMode();
+$cookieDeletionPatterns = $consentViewModel->getCookiePatternsForDeletionJson();
 ?>
 
 <script>
@@ -29,6 +30,9 @@ $gtmInfrastructureMode = $consentViewModel->isGtmInfrastructureMode();
     // Set up Hyva cookie consent integration
     window.cookie_consent_config = <?= /* @noEscape */ $consentViewModel->getCookieConsentConfigJson() ?>;
     window.cookie_consent_groups = <?= /* @noEscape */ $consentViewModel->getInitialConsentGroupsJson() ?>;
+
+    // Cookie patterns by category for deletion on consent revocation
+    window.cookie_consent_deletion_patterns = <?= /* @noEscape */ $cookieDeletionPatterns ?>;
 
     // Google Consent Mode v2 - Set default BEFORE GTM loads
     // This ensures GTM/GA4 respect consent from the start
@@ -156,10 +160,16 @@ $gtmInfrastructureMode = $consentViewModel->isGtmInfrastructureMode();
             },
 
             applyConsent() {
+                // Store previous consent state before updating (for deletion logic)
+                const previousConsent = { ...window.cookie_consent_groups };
+
                 // Update Hyva's cookie_consent_groups
                 Object.keys(this.consent).forEach(category => {
                     window.cookie_consent_groups[category] = this.consent[category];
                 });
+
+                // Delete cookies for categories where consent was revoked
+                this.deleteRevokedCookies(previousConsent, this.consent);
 
                 // Dispatch event for Hyva's cookie system
                 window.dispatchEvent(new CustomEvent('user-allowed-save-cookie'));
@@ -221,6 +231,95 @@ $gtmInfrastructureMode = $consentViewModel->isGtmInfrastructureMode();
 
             hasConsent(category) {
                 return this.consent[category] === true;
+            },
+
+            /**
+             * Cookie Deletion on Consent Revocation
+             *
+             * When a user revokes consent for a category, these methods delete
+             * known first-party cookies belonging to that category.
+             *
+             * Limitations:
+             * - HttpOnly cookies cannot be deleted via JavaScript
+             * - Third-party cookies (different domain) cannot be deleted
+             * - Some cookies may be on different paths than tried
+             */
+
+            /**
+             * Delete a cookie by name, trying multiple paths and domains
+             */
+            deleteCookie(name) {
+                const paths = ['/', window.location.pathname];
+                const hostname = window.location.hostname;
+                const domains = ['', hostname];
+
+                // Add parent domain for subdomain cookies (e.g., .example.com)
+                const parts = hostname.split('.');
+                if (parts.length > 2) {
+                    domains.push('.' + parts.slice(-2).join('.'));
+                } else if (parts.length === 2) {
+                    domains.push('.' + hostname);
+                }
+
+                paths.forEach(path => {
+                    domains.forEach(domain => {
+                        const domainPart = domain ? `; domain=${domain}` : '';
+                        document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=${path}${domainPart}`;
+                        // Also try with secure flag for HTTPS sites
+                        document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=${path}${domainPart}; secure`;
+                    });
+                });
+            },
+
+            /**
+             * Get all current browser cookie names
+             */
+            getAllCookieNames() {
+                return document.cookie.split(';')
+                    .map(c => c.trim().split('=')[0])
+                    .filter(name => name.length > 0);
+            },
+
+            /**
+             * Convert wildcard pattern (e.g., _ga_*) to regex
+             */
+            patternToRegex(pattern) {
+                // Escape regex special chars except *
+                const escaped = pattern.replace(/[.+?^${}()|[\]\\]/g, '\\$&');
+                // Convert * wildcards to regex .*
+                const regexPattern = '^' + escaped.replace(/\*/g, '.*') + '$';
+                return new RegExp(regexPattern);
+            },
+
+            /**
+             * Delete all cookies matching patterns for a category
+             */
+            deleteCookiesForCategory(category) {
+                const patterns = window.cookie_consent_deletion_patterns[category] || [];
+                const allCookies = this.getAllCookieNames();
+
+                patterns.forEach(pattern => {
+                    if (!pattern) return;
+
+                    const regex = this.patternToRegex(pattern);
+                    allCookies.forEach(cookieName => {
+                        if (regex.test(cookieName)) {
+                            this.deleteCookie(cookieName);
+                        }
+                    });
+                });
+            },
+
+            /**
+             * Delete cookies for categories that were revoked
+             */
+            deleteRevokedCookies(previousConsent, newConsent) {
+                Object.keys(previousConsent).forEach(category => {
+                    // Only delete if consent was granted and is now revoked
+                    if (previousConsent[category] === true && newConsent[category] === false) {
+                        this.deleteCookiesForCategory(category);
+                    }
+                });
             }
         };
     }
