@@ -1,0 +1,42 @@
+<?xml version="1.0"?>
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <!--
+            Remove Magento's native Google Analytics block.
+            When using this cookie consent module, GA should be loaded via:
+            - GTM (with consent-aware triggers), or
+            - Our GA4 service template (which respects consent)
+            This prevents GA cookies from being set before consent.
+        -->
+        <referenceBlock name="google_analytics" remove="true"/>
+
+        <!-- Cookie Consent Configuration Script (must come before banner) -->
+        <referenceContainer name="before.body.end">
+            <block name="hyva.cookie.consent.config"
+                   template="Pixelperfect_HyvaCookieConsent::cookie-config.phtml"
+                   before="-"/>
+        </referenceContainer>
+
+        <!-- Consent Banner Modal/Bar -->
+        <referenceContainer name="before.body.end">
+            <block name="hyva.cookie.consent.banner"
+                   template="Pixelperfect_HyvaCookieConsent::consent-banner.phtml"
+                   after="hyva.cookie.consent.config"/>
+        </referenceContainer>
+
+        <!-- Floating Cookie Settings Button -->
+        <referenceContainer name="before.body.end">
+            <block name="hyva.cookie.consent.floating.button"
+                   template="Pixelperfect_HyvaCookieConsent::floating-button.phtml"
+                   after="hyva.cookie.consent.banner"/>
+        </referenceContainer>
+
+        <!-- Service Script Loader (loads enabled tracking services) -->
+        <referenceContainer name="before.body.end">
+            <block name="hyva.cookie.consent.scripts"
+                   template="Pixelperfect_HyvaCookieConsent::script-loader.phtml"
+                   after="hyva.cookie.consent.floating.button"/>
+        </referenceContainer>
+    </body>
+</page>
