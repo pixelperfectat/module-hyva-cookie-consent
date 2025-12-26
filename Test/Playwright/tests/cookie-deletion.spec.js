@@ -36,7 +36,7 @@ async function waitForConsentBanner(page) {
 }
 
 /**
- * Open cookie settings (either via floating button or event)
+ * Open cookie settings via custom event
  * @param {import('@playwright/test').Page} page
  */
 async function openCookieSettings(page) {
@@ -44,6 +44,80 @@ async function openCookieSettings(page) {
     window.dispatchEvent(new CustomEvent('open-cookie-settings'));
   });
   await page.waitForTimeout(500);
+}
+
+/**
+ * Accept all cookies using Alpine component
+ * @param {import('@playwright/test').Page} page
+ */
+async function acceptAll(page) {
+  await page.evaluate(() => {
+    const component = Alpine.$data(document.querySelector('[x-data="hyvaCookieConsent"]'));
+    component.acceptAll();
+  });
+  await page.waitForTimeout(500);
+}
+
+/**
+ * Reject all cookies using Alpine component
+ * @param {import('@playwright/test').Page} page
+ */
+async function rejectAll(page) {
+  await page.evaluate(() => {
+    const component = Alpine.$data(document.querySelector('[x-data="hyvaCookieConsent"]'));
+    component.rejectAll();
+  });
+  await page.waitForTimeout(500);
+}
+
+/**
+ * Toggle a category and save preferences
+ * @param {import('@playwright/test').Page} page
+ * @param {string} category - Category to toggle (e.g., 'analytics', 'marketing')
+ */
+async function toggleCategoryAndSave(page, category) {
+  await page.evaluate((cat) => {
+    const component = Alpine.$data(document.querySelector('[x-data="hyvaCookieConsent"]'));
+    component.toggleCategory(cat);
+    component.savePreferences();
+  }, category);
+  await page.waitForTimeout(500);
+}
+
+/**
+ * Set a category to a specific value and save
+ * @param {import('@playwright/test').Page} page
+ * @param {string} category
+ * @param {boolean} enabled
+ */
+async function setCategoryAndSave(page, category, enabled) {
+  await page.evaluate(({ cat, val }) => {
+    const component = Alpine.$data(document.querySelector('[x-data="hyvaCookieConsent"]'));
+    component.consent[cat] = val;
+    component.savePreferences();
+  }, { cat: category, val: enabled });
+  await page.waitForTimeout(500);
+}
+
+/**
+ * Parse the consent cookie value
+ * @param {object} cookie - Cookie object from Playwright
+ */
+function parseConsentCookie(cookie) {
+  if (!cookie) return null;
+  try {
+    // Cookie value is double URL-encoded (encodeURIComponent in JS, then stored)
+    // First decode gets us the JSON with %22 etc, second decode gets actual JSON
+    let decoded = decodeURIComponent(cookie.value);
+    // Check if still encoded (starts with %7B which is {)
+    if (decoded.startsWith('%7B') || decoded.includes('%22')) {
+      decoded = decodeURIComponent(decoded);
+    }
+    return JSON.parse(decoded);
+  } catch (e) {
+    console.error('Failed to parse consent cookie:', e, cookie.value);
+    return null;
+  }
 }
 
 test.describe('Cookie Deletion on Consent Revocation', () => {
@@ -59,8 +133,7 @@ test.describe('Cookie Deletion on Consent Revocation', () => {
     await waitForConsentBanner(page);
 
     // Step 2: Accept all cookies
-    await page.click('button:has-text("Accept All")');
-    await page.waitForTimeout(500);
+    await acceptAll(page);
 
     // Step 3: Wait for GA cookies to be set (if GTM/GA4 is configured)
     await page.waitForTimeout(3000);
@@ -71,31 +144,15 @@ test.describe('Cookie Deletion on Consent Revocation', () => {
     // Log for debugging
     console.log('GA cookies before revocation:', gaCookiesBefore.map(c => c.name));
 
-    // Step 4: Open cookie settings
+    // Step 4: Open cookie settings and revoke analytics
     await openCookieSettings(page);
-    await waitForConsentBanner(page);
+    await page.waitForTimeout(300);
 
-    // Step 5: Click Customize to show toggles
-    const customizeButton = page.locator('button:has-text("Customize")');
-    if (await customizeButton.isVisible()) {
-      await customizeButton.click();
-      await page.waitForTimeout(500);
-    }
+    // Step 5: Disable analytics and save
+    await setCategoryAndSave(page, 'analytics', false);
+    await page.waitForTimeout(500);
 
-    // Step 6: Disable analytics category
-    const analyticsToggle = page.locator('[data-category="analytics"] button[role="switch"]');
-    if (await analyticsToggle.isVisible()) {
-      const isChecked = await analyticsToggle.getAttribute('aria-checked');
-      if (isChecked === 'true') {
-        await analyticsToggle.click();
-      }
-    }
-
-    // Step 7: Save preferences
-    await page.click('button:has-text("Save Preferences")');
-    await page.waitForTimeout(1000);
-
-    // Step 8: Verify GA cookies are deleted
+    // Step 6: Verify GA cookies are deleted
     cookies = await getAllCookies(context);
     const gaCookiesAfter = findCookiesByPattern(cookies, '_ga*');
 
@@ -126,26 +183,11 @@ test.describe('Cookie Deletion on Consent Revocation', () => {
     expect(gaCookiesBefore.length).toBeGreaterThanOrEqual(3);
 
     // Accept all first
-    await page.click('button:has-text("Accept All")');
-    await page.waitForTimeout(500);
+    await acceptAll(page);
 
     // Now revoke analytics
     await openCookieSettings(page);
-    await waitForConsentBanner(page);
-
-    const customizeButton = page.locator('button:has-text("Customize")');
-    if (await customizeButton.isVisible()) {
-      await customizeButton.click();
-      await page.waitForTimeout(500);
-    }
-
-    const analyticsToggle = page.locator('[data-category="analytics"] button[role="switch"]');
-    if (await analyticsToggle.isVisible()) {
-      await analyticsToggle.click();
-    }
-
-    await page.click('button:has-text("Save Preferences")');
-    await page.waitForTimeout(500);
+    await setCategoryAndSave(page, 'analytics', false);
 
     // Verify GA cookies are deleted but unrelated cookie remains
     cookies = await getAllCookies(context);
@@ -162,8 +204,7 @@ test.describe('Cookie Deletion on Consent Revocation', () => {
     await waitForConsentBanner(page);
 
     // Start with reject all
-    await page.click('button:has-text("Reject All")');
-    await page.waitForTimeout(500);
+    await rejectAll(page);
 
     // Set some test cookies (simulating what would happen if scripts ran)
     await page.evaluate(() => {
@@ -176,24 +217,7 @@ test.describe('Cookie Deletion on Consent Revocation', () => {
 
     // Now grant analytics consent (not revoke)
     await openCookieSettings(page);
-    await waitForConsentBanner(page);
-
-    const customizeButton = page.locator('button:has-text("Customize")');
-    if (await customizeButton.isVisible()) {
-      await customizeButton.click();
-      await page.waitForTimeout(500);
-    }
-
-    const analyticsToggle = page.locator('[data-category="analytics"] button[role="switch"]');
-    if (await analyticsToggle.isVisible()) {
-      const isChecked = await analyticsToggle.getAttribute('aria-checked');
-      if (isChecked === 'false') {
-        await analyticsToggle.click();
-      }
-    }
-
-    await page.click('button:has-text("Save Preferences")');
-    await page.waitForTimeout(500);
+    await setCategoryAndSave(page, 'analytics', true);
 
     // Cookie should still exist (we granted, not revoked)
     cookies = await getAllCookies(context);
@@ -207,8 +231,7 @@ test.describe('Cookie Deletion on Consent Revocation', () => {
     await waitForConsentBanner(page);
 
     // Accept all
-    await page.click('button:has-text("Accept All")');
-    await page.waitForTimeout(500);
+    await acceptAll(page);
 
     // Verify consent cookie exists
     let cookies = await getAllCookies(context);
@@ -216,8 +239,9 @@ test.describe('Cookie Deletion on Consent Revocation', () => {
     expect(consentCookie).toBeDefined();
 
     // Parse consent cookie value
-    if (consentCookie) {
-      const value = JSON.parse(decodeURIComponent(consentCookie.value));
+    const value = parseConsentCookie(consentCookie);
+    expect(value).not.toBeNull();
+    if (value) {
       expect(value.categories.necessary).toBe(true);
       expect(value.categories.analytics).toBe(true);
       expect(value.categories.marketing).toBe(true);
@@ -225,31 +249,18 @@ test.describe('Cookie Deletion on Consent Revocation', () => {
 
     // Now revoke analytics
     await openCookieSettings(page);
-    await waitForConsentBanner(page);
-
-    const customizeButton = page.locator('button:has-text("Customize")');
-    if (await customizeButton.isVisible()) {
-      await customizeButton.click();
-      await page.waitForTimeout(500);
-    }
-
-    const analyticsToggle = page.locator('[data-category="analytics"] button[role="switch"]');
-    if (await analyticsToggle.isVisible()) {
-      await analyticsToggle.click();
-    }
-
-    await page.click('button:has-text("Save Preferences")');
-    await page.waitForTimeout(500);
+    await setCategoryAndSave(page, 'analytics', false);
 
     // Verify consent cookie is updated
     cookies = await getAllCookies(context);
     const updatedConsentCookie = cookies.find(c => c.name === 'hyva_cookie_consent');
     expect(updatedConsentCookie).toBeDefined();
 
-    if (updatedConsentCookie) {
-      const value = JSON.parse(decodeURIComponent(updatedConsentCookie.value));
-      expect(value.categories.analytics).toBe(false);
-      expect(value.categories.necessary).toBe(true);
+    const updatedValue = parseConsentCookie(updatedConsentCookie);
+    expect(updatedValue).not.toBeNull();
+    if (updatedValue) {
+      expect(updatedValue.categories.analytics).toBe(false);
+      expect(updatedValue.categories.necessary).toBe(true);
     }
   });
 
@@ -264,8 +275,7 @@ test.describe('Cookie Deletion on Consent Revocation', () => {
     });
 
     // Accept all first
-    await page.click('button:has-text("Accept All")');
-    await page.waitForTimeout(500);
+    await acceptAll(page);
 
     let cookies = await getAllCookies(context);
     const fbCookiesBefore = findCookiesByPattern(cookies, '_fbp');
@@ -273,24 +283,7 @@ test.describe('Cookie Deletion on Consent Revocation', () => {
 
     // Revoke marketing
     await openCookieSettings(page);
-    await waitForConsentBanner(page);
-
-    const customizeButton = page.locator('button:has-text("Customize")');
-    if (await customizeButton.isVisible()) {
-      await customizeButton.click();
-      await page.waitForTimeout(500);
-    }
-
-    const marketingToggle = page.locator('[data-category="marketing"] button[role="switch"]');
-    if (await marketingToggle.isVisible()) {
-      const isChecked = await marketingToggle.getAttribute('aria-checked');
-      if (isChecked === 'true') {
-        await marketingToggle.click();
-      }
-    }
-
-    await page.click('button:has-text("Save Preferences")');
-    await page.waitForTimeout(500);
+    await setCategoryAndSave(page, 'marketing', false);
 
     // Verify FB cookie is deleted
     cookies = await getAllCookies(context);

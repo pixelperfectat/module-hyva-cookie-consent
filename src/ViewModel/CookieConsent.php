@@ -269,13 +269,16 @@ class CookieConsent implements ArgumentInterface
      * Used to delete first-party cookies when consent is revoked for a category.
      * Returns cookie name patterns (including wildcards like _ga_*) grouped by category.
      *
+     * Note: Uses ALL services (not just enabled) because cookies may be set by external
+     * tag managers or other sources, and we want to clean them up regardless.
+     *
      * @return string JSON encoded cookie patterns by category
      */
     public function getCookiePatternsForDeletionJson(): string
     {
         $patterns = [];
 
-        foreach ($this->servicePool->getEnabledServices() as $service) {
+        foreach ($this->servicePool->getAllServices() as $service) {
             $category = $service->getCategory();
             if (!isset($patterns[$category])) {
                 $patterns[$category] = [];
