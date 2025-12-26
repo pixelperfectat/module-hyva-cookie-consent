@@ -1,0 +1,142 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Pixelperfect\HyvaCookieConsent\Model;
+
+use Pixelperfect\HyvaCookieConsent\Api\Data\ServiceInterface;
+
+/**
+ * Pool of cookie consent services
+ *
+ * Services are configured via di.xml and instantiated using the Factory pattern
+ */
+class ServicePool
+{
+    /**
+     * @var array<string, ServiceInterface>
+     */
+    private array $services = [];
+
+    /**
+     * @param ServiceFactory $serviceFactory Factory for creating Service instances
+     * @param array<string, array<string, mixed>> $services Configuration from di.xml
+     */
+    public function __construct(
+        private readonly ServiceFactory $serviceFactory,
+        array $services = []
+    ) {
+        foreach ($services as $code => $data) {
+            $this->services[$code] = $this->serviceFactory->create([
+                'code' => $data['code'] ?? $code,
+                'title' => $data['title'] ?? '',
+                'description' => $data['description'] ?? '',
+                'category' => $data['category'] ?? 'analytics',
+                'template' => $data['template'] ?? '',
+                'isTagManager' => (bool) ($data['is_tag_manager'] ?? false),
+                'managedBy' => $data['managed_by'] ?? null,
+                'configFields' => $data['config_fields'] ?? [],
+                'cookies' => $data['cookies'] ?? [],
+                'enabledByDefault' => (bool) ($data['enabled_by_default'] ?? true)
+            ]);
+        }
+    }
+
+    /**
+     * Get all services (regardless of enabled state)
+     *
+     * @return array<string, ServiceInterface>
+     */
+    public function getAllServices(): array
+    {
+        return $this->services;
+    }
+
+    /**
+     * Get all enabled services
+     *
+     * @return array<string, ServiceInterface>
+     */
+    public function getEnabledServices(): array
+    {
+        return array_filter(
+            $this->services,
+            static fn(ServiceInterface $service) => $service->isEnabled()
+        );
+    }
+
+    /**
+     * Get enabled services for a specific category
+     *
+     * @param string $category Category code
+     * @return array<string, ServiceInterface>
+     */
+    public function getServicesForCategory(string $category): array
+    {
+        return array_filter(
+            $this->getEnabledServices(),
+            static fn(ServiceInterface $service) => $service->getCategory() === $category
+        );
+    }
+
+    /**
+     * Get a specific service by code
+     *
+     * @param string $code Service code identifier
+     * @return ServiceInterface|null
+     */
+    public function getService(string $code): ?ServiceInterface
+    {
+        return $this->services[$code] ?? null;
+    }
+
+    /**
+     * Get all tag manager services
+     *
+     * @return array<string, ServiceInterface>
+     */
+    public function getTagManagerServices(): array
+    {
+        return array_filter(
+            $this->getEnabledServices(),
+            static fn(ServiceInterface $service) => $service->isTagManager()
+        );
+    }
+
+    /**
+     * Get services managed by a specific tag manager
+     *
+     * @param string $tagManagerCode Tag manager service code
+     * @return array<string, ServiceInterface>
+     */
+    public function getServicesManagedBy(string $tagManagerCode): array
+    {
+        return array_filter(
+            $this->services,
+            static fn(ServiceInterface $service) => $service->getManagedBy() === $tagManagerCode
+        );
+    }
+
+    /**
+     * Get all cookies from enabled services grouped by category
+     *
+     * @return array<string, array<string, array<string, string>>>
+     */
+    public function getAllCookiesByCategory(): array
+    {
+        $cookiesByCategory = [];
+
+        foreach ($this->getEnabledServices() as $service) {
+            $category = $service->getCategory();
+            if (!isset($cookiesByCategory[$category])) {
+                $cookiesByCategory[$category] = [];
+            }
+
+            foreach ($service->getCookies() as $cookieName => $cookieData) {
+                $cookiesByCategory[$category][$cookieName] = $cookieData;
+            }
+        }
+
+        return $cookiesByCategory;
+    }
+}
