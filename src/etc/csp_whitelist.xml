@@ -1,0 +1,95 @@
+<?xml version="1.0"?>
+<csp_whitelist xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+               xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Csp:etc/csp_whitelist.xsd">
+    <policies>
+        <!-- Google Tag Manager / Analytics -->
+        <policy id="script-src">
+            <values>
+                <value id="gtm" type="host">www.googletagmanager.com</value>
+                <value id="gtm-wildcard" type="host">*.googletagmanager.com</value>
+                <value id="ga" type="host">www.google-analytics.com</value>
+                <value id="gtag" type="host">*.google.com</value>
+            </values>
+        </policy>
+        <policy id="connect-src">
+            <values>
+                <value id="ga-collect" type="host">www.google-analytics.com</value>
+                <value id="ga-region" type="host">*.google-analytics.com</value>
+                <value id="gtm-collect" type="host">*.googletagmanager.com</value>
+                <value id="analytics-google" type="host">analytics.google.com</value>
+            </values>
+        </policy>
+        <policy id="img-src">
+            <values>
+                <value id="ga-img" type="host">www.google-analytics.com</value>
+                <value id="gtm-img" type="host">www.googletagmanager.com</value>
+                <value id="google-img" type="host">*.google.com</value>
+            </values>
+        </policy>
+        <policy id="frame-src">
+            <values>
+                <value id="gtm-ns" type="host">www.googletagmanager.com</value>
+            </values>
+        </policy>
+
+        <!-- Facebook Pixel -->
+        <policy id="script-src">
+            <values>
+                <value id="fb-connect" type="host">connect.facebook.net</value>
+            </values>
+        </policy>
+        <policy id="connect-src">
+            <values>
+                <value id="fb-graph" type="host">www.facebook.com</value>
+                <value id="fb-connect" type="host">connect.facebook.net</value>
+            </values>
+        </policy>
+        <policy id="img-src">
+            <values>
+                <value id="fb-pixel" type="host">www.facebook.com</value>
+            </values>
+        </policy>
+
+        <!-- Microsoft Clarity -->
+        <policy id="script-src">
+            <values>
+                <value id="clarity" type="host">www.clarity.ms</value>
+                <value id="clarity-wildcard" type="host">*.clarity.ms</value>
+            </values>
+        </policy>
+        <policy id="connect-src">
+            <values>
+                <value id="clarity-api" type="host">*.clarity.ms</value>
+            </values>
+        </policy>
+
+        <!-- Hotjar -->
+        <policy id="script-src">
+            <values>
+                <value id="hotjar" type="host">static.hotjar.com</value>
+                <value id="hotjar-script" type="host">script.hotjar.com</value>
+            </values>
+        </policy>
+        <policy id="connect-src">
+            <values>
+                <value id="hotjar-api" type="host">*.hotjar.com</value>
+                <value id="hotjar-io" type="host">*.hotjar.io</value>
+            </values>
+        </policy>
+        <policy id="frame-src">
+            <values>
+                <value id="hotjar-frame" type="host">*.hotjar.com</value>
+            </values>
+        </policy>
+        <policy id="img-src">
+            <values>
+                <value id="hotjar-img" type="host">*.hotjar.com</value>
+            </values>
+        </policy>
+        <policy id="font-src">
+            <values>
+                <value id="hotjar-font" type="host">*.hotjar.com</value>
+            </values>
+        </policy>
+    </policies>
+</csp_whitelist>
