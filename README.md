@@ -247,6 +247,8 @@ This module automatically removes Magento's native `Magento_GoogleAnalytics` blo
 
 ## Testing
 
+### Manual Testing
+
 To verify the module is working:
 
 1. Open the site in an incognito window
@@ -254,6 +256,63 @@ To verify the module is working:
 3. Open browser DevTools → Console
 4. Run: `window.dataLayer` - verify `consent: default` with `analytics_storage: denied`
 5. Accept cookies and verify tracking activates
+
+### Automated Testing (Playwright)
+
+The module includes Playwright tests for cookie consent functionality:
+
+```bash
+cd Test/Playwright
+npm install
+npx playwright install chromium
+
+# Copy and configure environment
+cp .env.example .env
+# Edit .env to set your PLAYWRIGHT_BASE_URL
+
+# Run tests
+npm test
+
+# Run tests with browser visible
+npm run test:headed
+
+# Debug mode
+npm run test:debug
+```
+
+Test scenarios include:
+- Cookie deletion when analytics consent is revoked
+- Cookie deletion when marketing consent is revoked
+- Wildcard pattern matching (`_ga_*` matches `_ga_ABC123`)
+- Consent state persistence verification
+
+## Cookie Deletion on Consent Revocation
+
+When a user revokes consent for a category (e.g., disables Analytics after previously accepting), the module automatically deletes all known first-party cookies belonging to that category.
+
+### How It Works
+
+1. Cookie patterns are defined in `di.xml` for each service (e.g., `_ga`, `_ga_*`, `_fbp`)
+2. When consent is revoked, JavaScript matches these patterns against actual browser cookies
+3. Matching cookies are deleted by setting their expiration to the past
+
+### Supported Patterns
+
+- **Exact match**: `_ga` - matches only `_ga`
+- **Wildcard suffix**: `_ga_*` - matches `_ga_ABC123`, `_ga_XYZ`, etc.
+- **Wildcard anywhere**: `_pk_id.*` - matches `_pk_id.1.abc`, `_pk_id.2.xyz`
+
+### Limitations
+
+**Cannot delete:**
+- **HttpOnly cookies** - Cookies set with the HttpOnly flag by the server cannot be accessed or deleted via JavaScript. Some analytics services set HttpOnly cookies which will persist until they expire or are cleared manually.
+- **Third-party cookies** - Cookies set by external domains (e.g., `doubleclick.net`) cannot be deleted as JavaScript can only access cookies on the same domain.
+- **Secure cookies on HTTP** - If running on HTTP (not recommended), cookies set with the Secure flag cannot be deleted.
+
+**Recommended additional measures:**
+- Use Google Consent Mode v2 (built-in) - GA4 respects consent updates and stops tracking
+- Configure services to use first-party cookies where possible
+- Inform users about browser cookie clearing for complete removal
 
 ## Troubleshooting
 
