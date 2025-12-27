@@ -1,0 +1,5 @@
+# Tell GitHub that .phtml files are PHP
+*.phtml linguist-language=PHP
+
+# Optional: exclude vendor/test files from language stats
+/Test/* linguist-vendored
