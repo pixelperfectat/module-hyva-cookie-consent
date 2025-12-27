@@ -331,4 +331,4 @@ When a user revokes consent for a category (e.g., disables Analytics after previ
 
 ## License
 
-Proprietary - See LICENSE file
+MIT License - see [LICENSE](LICENSE) file for details.
