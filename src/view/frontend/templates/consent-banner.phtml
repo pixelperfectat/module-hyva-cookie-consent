@@ -130,6 +130,7 @@ $containerClasses = $bannerStyle === 'modal'
             <button
                 type="button"
                 @click="toggleCookieDetails"
+                data-testid="cookie-show-details"
                 class="text-sm text-primary underline hover:no-underline"
             >
                 <span x-show="!showCookieDetails"><?= $escaper->escapeHtml(__('Show cookie details')) ?></span>
@@ -142,6 +143,7 @@ $containerClasses = $bannerStyle === 'modal'
             <button
                 type="button"
                 @click="toggleDetails"
+                data-testid="cookie-customize"
                 class="btn btn-secondary px-4 py-2 border border-gray-300 rounded text-gray-700 hover:bg-gray-100 transition-colors"
             >
                 <span x-show="!showDetails"><?= $escaper->escapeHtml(__('Customize')) ?></span>
@@ -150,6 +152,7 @@ $containerClasses = $bannerStyle === 'modal'
             <button
                 type="button"
                 @click="rejectAll"
+                data-testid="cookie-reject-all"
                 class="btn btn-secondary px-4 py-2 border border-gray-300 rounded text-gray-700 hover:bg-gray-100 transition-colors"
             >
                 <?= $escaper->escapeHtml(__('Reject All')) ?>
@@ -158,6 +161,7 @@ $containerClasses = $bannerStyle === 'modal'
                 <button
                     type="button"
                     @click="savePreferences"
+                    data-testid="cookie-save-preferences"
                     class="btn btn-primary px-4 py-2 bg-primary text-white rounded hover:bg-primary-darker transition-colors"
                 >
                     <?= $escaper->escapeHtml(__('Save Preferences')) ?>
@@ -167,6 +171,7 @@ $containerClasses = $bannerStyle === 'modal'
                 <button
                     type="button"
                     @click="acceptAll"
+                    data-testid="cookie-accept-all"
                     class="btn btn-primary px-4 py-2 bg-primary text-white rounded hover:bg-primary-darker transition-colors"
                 >
                     <?= $escaper->escapeHtml(__('Accept All')) ?>

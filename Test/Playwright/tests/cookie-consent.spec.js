@@ -15,9 +15,20 @@
  */
 
 const { test, expect } = require('@playwright/test');
-
-// Configuration - baseURL comes from playwright.config.js
-const CONSENT_COOKIE_NAME = 'hyva_cookie_consent';
+const {
+    SELECTORS,
+    CONSENT_COOKIE_NAME,
+    getAllCookies,
+    waitForPageReady,
+    clickAcceptAll,
+    clickRejectAll,
+    clickFloatingButton,
+    getConsentData,
+    getBanner,
+    findDataLayerEvent,
+    getCookieConsentConfig,
+    getCookieConsentGroups,
+} = require('./helpers/cookie-consent.helpers');
 
 test.describe('Cookie Consent Banner', () => {
     test.beforeEach(async ({ context }) => {
@@ -27,26 +38,22 @@ test.describe('Cookie Consent Banner', () => {
 
     test('banner appears for new visitors', async ({ page }) => {
         await page.goto('/', { waitUntil: 'networkidle' });
-        await page.waitForTimeout(2000);
+        await waitForPageReady(page);
 
-        const banner = page.locator('#cookie-consent-banner');
+        const banner = getBanner(page);
         await expect(banner).toBeVisible();
 
-        // Check buttons exist
-        const acceptAllBtn = page.locator('button:has-text("Alle akzeptieren"), button:has-text("Accept All")').first();
-        const rejectAllBtn = page.locator('button:has-text("Alle ablehnen"), button:has-text("Reject All")').first();
-        const customizeBtn = page.locator('button:has-text("Anpassen"), button:has-text("Customize")').first();
-
-        await expect(acceptAllBtn).toBeVisible();
-        await expect(rejectAllBtn).toBeVisible();
-        await expect(customizeBtn).toBeVisible();
+        // Check buttons exist using data-testid selectors
+        await expect(page.locator(SELECTORS.acceptAll)).toBeVisible();
+        await expect(page.locator(SELECTORS.rejectAll)).toBeVisible();
+        await expect(page.locator(SELECTORS.customize)).toBeVisible();
     });
 
     test('cookies are blocked before consent', async ({ page, context }) => {
         await page.goto('/', { waitUntil: 'networkidle' });
-        await page.waitForTimeout(2000);
+        await waitForPageReady(page);
 
-        const cookies = await context.cookies();
+        const cookies = await getAllCookies(context);
         const cookieNames = cookies.map(c => c.name);
 
         // Should only have necessary cookies
@@ -62,21 +69,19 @@ test.describe('Cookie Consent Banner', () => {
 
     test('Accept All grants consent and sets cookies', async ({ page, context }) => {
         await page.goto('/', { waitUntil: 'networkidle' });
-        await page.waitForTimeout(2000);
+        await waitForPageReady(page);
 
         // Click Accept All
-        const acceptAllBtn = page.locator('button:has-text("Alle akzeptieren"), button:has-text("Accept All")').first();
-        await acceptAllBtn.click();
-        await page.waitForTimeout(1500);
+        await clickAcceptAll(page);
 
         // Banner should close
-        const banner = page.locator('#cookie-consent-banner');
+        const banner = getBanner(page);
         await expect(banner).not.toBeVisible();
 
         // Wait for cookies to be set
         await page.waitForTimeout(2000);
 
-        const cookies = await context.cookies();
+        const cookies = await getAllCookies(context);
         const cookieNames = cookies.map(c => c.name);
 
         // Should have consent cookie
@@ -86,8 +91,7 @@ test.describe('Cookie Consent Banner', () => {
         expect(cookieNames.some(n => n.startsWith('_ga'))).toBeTruthy();
 
         // Verify consent cookie value
-        const consentCookie = cookies.find(c => c.name === CONSENT_COOKIE_NAME);
-        const consentValue = JSON.parse(decodeURIComponent(consentCookie.value));
+        const consentValue = await getConsentData(context);
         expect(consentValue.categories.necessary).toBe(true);
         expect(consentValue.categories.analytics).toBe(true);
         expect(consentValue.categories.marketing).toBe(true);
@@ -96,20 +100,18 @@ test.describe('Cookie Consent Banner', () => {
 
     test('Reject All denies consent and blocks tracking cookies', async ({ page, context }) => {
         await page.goto('/', { waitUntil: 'networkidle' });
-        await page.waitForTimeout(2000);
+        await waitForPageReady(page);
 
         // Click Reject All
-        const rejectAllBtn = page.locator('button:has-text("Alle ablehnen"), button:has-text("Reject All")').first();
-        await rejectAllBtn.click();
-        await page.waitForTimeout(1500);
+        await clickRejectAll(page);
 
         // Banner should close
-        const banner = page.locator('#cookie-consent-banner');
+        const banner = getBanner(page);
         await expect(banner).not.toBeVisible();
 
         await page.waitForTimeout(2000);
 
-        const cookies = await context.cookies();
+        const cookies = await getAllCookies(context);
         const cookieNames = cookies.map(c => c.name);
 
         // Should have consent cookie (to remember rejection)
@@ -120,8 +122,7 @@ test.describe('Cookie Consent Banner', () => {
         expect(cookieNames.some(n => n === '_fbp')).toBeFalsy();
 
         // Verify consent cookie shows rejection
-        const consentCookie = cookies.find(c => c.name === CONSENT_COOKIE_NAME);
-        const consentValue = JSON.parse(decodeURIComponent(consentCookie.value));
+        const consentValue = await getConsentData(context);
         expect(consentValue.categories.necessary).toBe(true);
         expect(consentValue.categories.analytics).toBe(false);
         expect(consentValue.categories.marketing).toBe(false);
@@ -135,47 +136,28 @@ test.describe('GTM Infrastructure Mode + Consent Mode v2', () => {
 
     test('consent_default event fires with denied state', async ({ page }) => {
         await page.goto('/', { waitUntil: 'networkidle' });
-        await page.waitForTimeout(2000);
+        await waitForPageReady(page);
 
-        const dataLayerInfo = await page.evaluate(() => {
-            if (typeof window.dataLayer !== 'undefined') {
-                return {
-                    exists: true,
-                    consentDefault: window.dataLayer.find(e => e.event === 'consent_default')
-                };
-            }
-            return { exists: false };
-        });
+        const consentDefault = await findDataLayerEvent(page, 'consent_default');
 
-        expect(dataLayerInfo.exists).toBe(true);
-        expect(dataLayerInfo.consentDefault).toBeDefined();
-        expect(dataLayerInfo.consentDefault.consent_analytics).toBe(false);
-        expect(dataLayerInfo.consentDefault.consent_marketing).toBe(false);
+        expect(consentDefault).toBeDefined();
+        expect(consentDefault.consent_analytics).toBe(false);
+        expect(consentDefault.consent_marketing).toBe(false);
     });
 
     test('consent_update event fires after accepting', async ({ page }) => {
         await page.goto('/', { waitUntil: 'networkidle' });
-        await page.waitForTimeout(2000);
+        await waitForPageReady(page);
 
         // Accept all
-        const acceptAllBtn = page.locator('button:has-text("Alle akzeptieren"), button:has-text("Accept All")').first();
-        await acceptAllBtn.click();
+        await clickAcceptAll(page);
         await page.waitForTimeout(1000);
 
-        const dataLayerInfo = await page.evaluate(() => {
-            if (typeof window.dataLayer !== 'undefined') {
-                return {
-                    exists: true,
-                    consentUpdate: window.dataLayer.find(e => e.event === 'consent_update')
-                };
-            }
-            return { exists: false };
-        });
+        const consentUpdate = await findDataLayerEvent(page, 'consent_update');
 
-        expect(dataLayerInfo.exists).toBe(true);
-        expect(dataLayerInfo.consentUpdate).toBeDefined();
-        expect(dataLayerInfo.consentUpdate.consent_analytics).toBe(true);
-        expect(dataLayerInfo.consentUpdate.consent_marketing).toBe(true);
+        expect(consentUpdate).toBeDefined();
+        expect(consentUpdate.consent_analytics).toBe(true);
+        expect(consentUpdate.consent_marketing).toBe(true);
     });
 });
 
@@ -185,26 +167,25 @@ test.describe('Consent Persistence', () => {
 
         // Visit first page and accept
         await page.goto('/', { waitUntil: 'networkidle' });
-        await page.waitForTimeout(2000);
+        await waitForPageReady(page);
 
-        const acceptAllBtn = page.locator('button:has-text("Alle akzeptieren"), button:has-text("Accept All")').first();
-        await acceptAllBtn.click();
+        await clickAcceptAll(page);
         await page.waitForTimeout(1000);
 
         // Verify banner is closed
-        let banner = page.locator('#cookie-consent-banner');
+        let banner = getBanner(page);
         await expect(banner).not.toBeVisible();
 
-        // Navigate to a different page
-        await page.goto('/ersatzteile', { waitUntil: 'networkidle' });
-        await page.waitForTimeout(2000);
+        // Reload the page (portable - works on any installation)
+        await page.reload({ waitUntil: 'networkidle' });
+        await waitForPageReady(page);
 
-        // Banner should NOT appear on second page
-        banner = page.locator('#cookie-consent-banner');
+        // Banner should NOT appear on reload
+        banner = getBanner(page);
         await expect(banner).not.toBeVisible();
 
         // Cookies should persist
-        const cookies = await context.cookies();
+        const cookies = await getAllCookies(context);
         const cookieNames = cookies.map(c => c.name);
         expect(cookieNames).toContain(CONSENT_COOKIE_NAME);
         expect(cookieNames.some(n => n.startsWith('_ga'))).toBeTruthy();
@@ -216,25 +197,23 @@ test.describe('Floating Button', () => {
         await context.clearCookies();
 
         await page.goto('/', { waitUntil: 'networkidle' });
-        await page.waitForTimeout(2000);
+        await waitForPageReady(page);
 
         // Accept all first
-        const acceptAllBtn = page.locator('button:has-text("Alle akzeptieren"), button:has-text("Accept All")').first();
-        await acceptAllBtn.click();
+        await clickAcceptAll(page);
         await page.waitForTimeout(1000);
 
         // Banner should be closed
-        let banner = page.locator('#cookie-consent-banner');
+        let banner = getBanner(page);
         await expect(banner).not.toBeVisible();
 
         // Find and click floating button
-        const floatingBtn = page.locator('button[aria-label*="Cookie"], button[title*="Cookie"]').first();
+        const floatingBtn = page.locator(SELECTORS.floatingButton);
         await expect(floatingBtn).toBeVisible();
-        await floatingBtn.click();
-        await page.waitForTimeout(500);
+        await clickFloatingButton(page);
 
         // Banner should reopen
-        banner = page.locator('#cookie-consent-banner');
+        banner = getBanner(page);
         await expect(banner).toBeVisible();
     });
 });
@@ -242,9 +221,9 @@ test.describe('Floating Button', () => {
 test.describe('Cookie Config Structure', () => {
     test('cookie_consent_config uses correct Hyva format', async ({ page }) => {
         await page.goto('/', { waitUntil: 'networkidle' });
-        await page.waitForTimeout(2000);
+        await waitForPageReady(page);
 
-        const config = await page.evaluate(() => window.cookie_consent_config);
+        const config = await getCookieConsentConfig(page);
 
         // Config should have groups as keys with arrays of cookie names
         expect(Array.isArray(config.necessary)).toBe(true);
@@ -260,9 +239,9 @@ test.describe('Cookie Config Structure', () => {
 
     test('cookie_consent_groups initialized correctly', async ({ page }) => {
         await page.goto('/', { waitUntil: 'networkidle' });
-        await page.waitForTimeout(2000);
+        await waitForPageReady(page);
 
-        const groups = await page.evaluate(() => window.cookie_consent_groups);
+        const groups = await getCookieConsentGroups(page);
 
         // Necessary should always be true
         expect(groups.necessary).toBe(true);
