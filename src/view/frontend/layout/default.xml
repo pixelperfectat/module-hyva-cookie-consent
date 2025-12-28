@@ -11,6 +11,14 @@
         -->
         <referenceBlock name="google_analytics" remove="true"/>
 
+        <!--
+            Remove Magento's default cookie notice.
+            We enable web/cookie/cookie_restriction in config.xml to make Hyvä's
+            hyva.setCookie() block cookies until consent, but we replace Magento's
+            native notice with our own comprehensive cookie consent banner.
+        -->
+        <referenceBlock name="cookie_notices" remove="true"/>
+
         <!-- Cookie Consent Configuration Script (must come before banner) -->
         <referenceContainer name="before.body.end">
             <block name="hyva.cookie.consent.config"
