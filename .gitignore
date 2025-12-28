@@ -1,0 +1,5 @@
+Test/Playwright/node_modules
+Test/Playwright/playwright-report
+Test/Playwright/test-artifacts
+.env
+
