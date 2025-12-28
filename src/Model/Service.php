@@ -7,6 +7,7 @@ namespace Pixelperfect\HyvaCookieConsent\Model;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Store\Model\ScopeInterface;
 use Pixelperfect\HyvaCookieConsent\Api\Data\ServiceInterface;
+use Pixelperfect\HyvaCookieConsent\Model\Config\Source\LoadingMethod;
 
 /**
  * Cookie consent service model
@@ -159,5 +160,52 @@ class Service implements ServiceInterface
             }
         }
         return true;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getLoadingMethod(): string
+    {
+        // First check if service is enabled at all
+        if (!$this->isEnabled()) {
+            return LoadingMethod::METHOD_DISABLED;
+        }
+
+        // Check admin config for loading method
+        $loadingMethod = $this->getConfigValue('loading_method');
+
+        if ($loadingMethod !== null) {
+            return (string) $loadingMethod;
+        }
+
+        // Default: if service has a template, it's direct loading
+        // If no template (GTM-managed in di.xml), it's GTM loading
+        if (!empty($this->template)) {
+            return LoadingMethod::METHOD_DIRECT;
+        }
+
+        // Service defined without template is assumed to be GTM-managed
+        if ($this->managedBy !== null) {
+            return LoadingMethod::METHOD_GTM;
+        }
+
+        return LoadingMethod::METHOD_DIRECT;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function isDirectLoading(): bool
+    {
+        return $this->getLoadingMethod() === LoadingMethod::METHOD_DIRECT;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function isGtmLoading(): bool
+    {
+        return $this->getLoadingMethod() === LoadingMethod::METHOD_GTM;
     }
 }

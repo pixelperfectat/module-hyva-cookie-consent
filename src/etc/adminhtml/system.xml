@@ -97,11 +97,20 @@
                         <label>Enable</label>
                         <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     </field>
-                    <field id="measurement_id" translate="label comment" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
-                        <label>Measurement ID</label>
-                        <comment><![CDATA[e.g., G-XXXXXXXXXX]]></comment>
+                    <field id="loading_method" translate="label comment" type="select" sortOrder="15" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Loading Method</label>
+                        <source_model>Pixelperfect\HyvaCookieConsent\Model\Config\Source\LoadingMethod</source_model>
+                        <comment><![CDATA[<strong>Direct:</strong> Module loads the script (blocked until consent)<br/><strong>Via GTM:</strong> Service is loaded via Google Tag Manager (configure in GTM, shown in consent banner for transparency)]]></comment>
                         <depends>
                             <field id="enabled">1</field>
+                        </depends>
+                    </field>
+                    <field id="measurement_id" translate="label comment" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Measurement ID</label>
+                        <comment><![CDATA[e.g., G-XXXXXXXXXX (only required for Direct loading)]]></comment>
+                        <depends>
+                            <field id="enabled">1</field>
+                            <field id="loading_method">direct</field>
                         </depends>
                     </field>
                 </group>
@@ -113,11 +122,20 @@
                         <label>Enable</label>
                         <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     </field>
-                    <field id="pixel_id" translate="label comment" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
-                        <label>Pixel ID</label>
-                        <comment><![CDATA[e.g., 1234567890123456]]></comment>
+                    <field id="loading_method" translate="label comment" type="select" sortOrder="15" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Loading Method</label>
+                        <source_model>Pixelperfect\HyvaCookieConsent\Model\Config\Source\LoadingMethod</source_model>
+                        <comment><![CDATA[<strong>Direct:</strong> Module loads the script (blocked until consent)<br/><strong>Via GTM:</strong> Service is loaded via Google Tag Manager]]></comment>
                         <depends>
                             <field id="enabled">1</field>
+                        </depends>
+                    </field>
+                    <field id="pixel_id" translate="label comment" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Pixel ID</label>
+                        <comment><![CDATA[e.g., 1234567890123456 (only required for Direct loading)]]></comment>
+                        <depends>
+                            <field id="enabled">1</field>
+                            <field id="loading_method">direct</field>
                         </depends>
                     </field>
                 </group>
@@ -129,11 +147,20 @@
                         <label>Enable</label>
                         <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     </field>
-                    <field id="project_id" translate="label comment" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
-                        <label>Project ID</label>
-                        <comment><![CDATA[e.g., abcdefghij]]></comment>
+                    <field id="loading_method" translate="label comment" type="select" sortOrder="15" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Loading Method</label>
+                        <source_model>Pixelperfect\HyvaCookieConsent\Model\Config\Source\LoadingMethod</source_model>
+                        <comment><![CDATA[<strong>Direct:</strong> Module loads the script (blocked until consent)<br/><strong>Via GTM:</strong> Service is loaded via Google Tag Manager]]></comment>
                         <depends>
                             <field id="enabled">1</field>
+                        </depends>
+                    </field>
+                    <field id="project_id" translate="label comment" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Project ID</label>
+                        <comment><![CDATA[e.g., abcdefghij (only required for Direct loading)]]></comment>
+                        <depends>
+                            <field id="enabled">1</field>
+                            <field id="loading_method">direct</field>
                         </depends>
                     </field>
                 </group>
@@ -145,11 +172,20 @@
                         <label>Enable</label>
                         <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     </field>
-                    <field id="site_id" translate="label comment" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
-                        <label>Site ID</label>
-                        <comment><![CDATA[e.g., 1234567]]></comment>
+                    <field id="loading_method" translate="label comment" type="select" sortOrder="15" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Loading Method</label>
+                        <source_model>Pixelperfect\HyvaCookieConsent\Model\Config\Source\LoadingMethod</source_model>
+                        <comment><![CDATA[<strong>Direct:</strong> Module loads the script (blocked until consent)<br/><strong>Via GTM:</strong> Service is loaded via Google Tag Manager]]></comment>
                         <depends>
                             <field id="enabled">1</field>
+                        </depends>
+                    </field>
+                    <field id="site_id" translate="label comment" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Site ID</label>
+                        <comment><![CDATA[e.g., 1234567 (only required for Direct loading)]]></comment>
+                        <depends>
+                            <field id="enabled">1</field>
+                            <field id="loading_method">direct</field>
                         </depends>
                     </field>
                 </group>
@@ -161,18 +197,28 @@
                         <label>Enable</label>
                         <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     </field>
-                    <field id="tracker_url" translate="label comment" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
-                        <label>Tracker URL</label>
-                        <comment><![CDATA[e.g., https://analytics.example.com/]]></comment>
+                    <field id="loading_method" translate="label comment" type="select" sortOrder="15" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Loading Method</label>
+                        <source_model>Pixelperfect\HyvaCookieConsent\Model\Config\Source\LoadingMethod</source_model>
+                        <comment><![CDATA[<strong>Direct:</strong> Module loads the script (blocked until consent)<br/><strong>Via GTM:</strong> Service is loaded via Google Tag Manager]]></comment>
                         <depends>
                             <field id="enabled">1</field>
                         </depends>
                     </field>
-                    <field id="site_id" translate="label comment" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
-                        <label>Site ID</label>
-                        <comment><![CDATA[e.g., 1]]></comment>
+                    <field id="tracker_url" translate="label comment" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Tracker URL</label>
+                        <comment><![CDATA[e.g., https://analytics.example.com/ (only required for Direct loading)]]></comment>
                         <depends>
                             <field id="enabled">1</field>
+                            <field id="loading_method">direct</field>
+                        </depends>
+                    </field>
+                    <field id="site_id" translate="label comment" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Site ID</label>
+                        <comment><![CDATA[e.g., 1 (only required for Direct loading)]]></comment>
+                        <depends>
+                            <field id="enabled">1</field>
+                            <field id="loading_method">direct</field>
                         </depends>
                     </field>
                 </group>

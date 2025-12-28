@@ -81,4 +81,25 @@ interface ServiceInterface
      * @return array<string, array<string, string>>
      */
     public function getCookies(): array;
+
+    /**
+     * Get loading method (direct, gtm, or disabled)
+     *
+     * @return string
+     */
+    public function getLoadingMethod(): string;
+
+    /**
+     * Check if service should be loaded directly by the module
+     *
+     * @return bool
+     */
+    public function isDirectLoading(): bool;
+
+    /**
+     * Check if service is loaded via Google Tag Manager
+     *
+     * @return bool
+     */
+    public function isGtmLoading(): bool;
 }

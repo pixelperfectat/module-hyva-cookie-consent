@@ -139,4 +139,63 @@ class ServicePool
 
         return $cookiesByCategory;
     }
+
+    /**
+     * Get services that should be loaded directly by the module
+     *
+     * These services have templates and the module injects their scripts
+     *
+     * @return array<string, ServiceInterface>
+     */
+    public function getDirectLoadingServices(): array
+    {
+        return array_filter(
+            $this->getEnabledServices(),
+            static fn(ServiceInterface $service) => $service->isDirectLoading()
+        );
+    }
+
+    /**
+     * Get services that are loaded via Google Tag Manager
+     *
+     * These services appear in the consent banner for transparency
+     * but their scripts are managed by GTM
+     *
+     * @return array<string, ServiceInterface>
+     */
+    public function getGtmLoadingServices(): array
+    {
+        return array_filter(
+            $this->getEnabledServices(),
+            static fn(ServiceInterface $service) => $service->isGtmLoading()
+        );
+    }
+
+    /**
+     * Get direct loading services for a specific category
+     *
+     * @param string $category Category code
+     * @return array<string, ServiceInterface>
+     */
+    public function getDirectLoadingServicesForCategory(string $category): array
+    {
+        return array_filter(
+            $this->getDirectLoadingServices(),
+            static fn(ServiceInterface $service) => $service->getCategory() === $category
+        );
+    }
+
+    /**
+     * Get GTM loading services for a specific category
+     *
+     * @param string $category Category code
+     * @return array<string, ServiceInterface>
+     */
+    public function getGtmLoadingServicesForCategory(string $category): array
+    {
+        return array_filter(
+            $this->getGtmLoadingServices(),
+            static fn(ServiceInterface $service) => $service->getCategory() === $category
+        );
+    }
 }
