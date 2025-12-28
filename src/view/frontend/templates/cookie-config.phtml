@@ -132,6 +132,21 @@ $cookieDeletionPatterns = $consentViewModel->getCookiePatternsForDeletionJson();
                 this.consent[category] = !this.consent[category];
             },
 
+            toggleCategoryClick(event) {
+                const category = event.currentTarget.dataset.category;
+                if (category) {
+                    this.toggleCategory(category);
+                }
+            },
+
+            toggleDetails() {
+                this.showDetails = !this.showDetails;
+            },
+
+            toggleCookieDetails() {
+                this.showCookieDetails = !this.showCookieDetails;
+            },
+
             acceptAll() {
                 Object.keys(this.consent).forEach(key => {
                     this.consent[key] = true;

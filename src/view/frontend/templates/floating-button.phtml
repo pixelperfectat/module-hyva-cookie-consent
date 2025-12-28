@@ -3,12 +3,14 @@
 declare(strict_types=1);
 
 use Hyva\Theme\Model\ViewModelRegistry;
+use Hyva\Theme\ViewModel\HyvaCsp;
 use Magento\Framework\Escaper;
 use Pixelperfect\HyvaCookieConsent\ViewModel\CookieConsent;
 
 /** @var Escaper $escaper */
 /** @var ViewModelRegistry $viewModels */
 
+$hyvaCsp = $viewModels->require(HyvaCsp::class);
 $consentViewModel = $viewModels->require(CookieConsent::class);
 
 if (!$consentViewModel->isEnabled()) {
@@ -21,8 +23,8 @@ $positionClass = $position === 'right' ? 'right-4' : 'left-4';
 
 <button
     type="button"
-    x-data
-    @click="$dispatch('open-cookie-settings')"
+    x-data="cookieSettingsButton"
+    @click="openSettings"
     class="fixed bottom-4 <?= $escaper->escapeHtmlAttr($positionClass) ?> z-40 p-3 bg-gray-800 text-white rounded-full shadow-lg hover:bg-gray-700 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
     aria-label="<?= $escaper->escapeHtmlAttr(__('Cookie Settings')) ?>"
     title="<?= $escaper->escapeHtmlAttr(__('Cookie Settings')) ?>"
@@ -37,3 +39,20 @@ $positionClass = $position === 'right' ? 'right-4' : 'left-4';
         <circle cx="13" cy="17" r="1" fill="currentColor"/>
     </svg>
 </button>
+
+<script>
+    'use strict';
+
+    function initCookieSettingsButton() {
+        return {
+            openSettings() {
+                window.dispatchEvent(new CustomEvent('open-cookie-settings'));
+            }
+        };
+    }
+
+    document.addEventListener('alpine:init', () => {
+        Alpine.data('cookieSettingsButton', initCookieSettingsButton);
+    }, { once: true });
+</script>
+<?php $hyvaCsp->registerInlineScript() ?>
