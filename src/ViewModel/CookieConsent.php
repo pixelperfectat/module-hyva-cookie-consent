@@ -211,36 +211,48 @@ class CookieConsent implements ArgumentInterface
     /**
      * Get cookie consent config JSON for Hyva integration
      *
-     * Maps cookies to their consent groups for the Hyva cookie consent infrastructure
+     * Hyva expects: { groupName: [cookieName1, cookieName2, ...], ... }
+     * The getGroupByCookieName() function iterates over groups and checks
+     * if the array of cookie names includes the requested cookie.
      *
      * @return string JSON encoded config
      */
     public function getCookieConsentConfigJson(): string
     {
-        $config = [];
+        // Build config with group as key and array of cookie names as value
+        $config = [
+            'necessary' => [
+                'hyva_cookie_consent',  // Critical: consent cookie must be in necessary!
+                'PHPSESSID',
+                'form_key',
+                'mage-cache-storage',
+                'mage-cache-storage-section-invalidation',
+                'mage-cache-sessid',
+                'mage-messages',
+            ],
+            'preferences' => [
+                'recently_viewed_product',
+                'recently_viewed_product_previous',
+                'recently_compared_product',
+                'recently_compared_product_previous',
+                'product_data_storage',
+            ],
+        ];
 
+        // Add cookies from enabled services to their respective categories
         foreach ($this->servicePool->getEnabledServices() as $service) {
             $category = $service->getCategory();
+            if (!isset($config[$category])) {
+                $config[$category] = [];
+            }
+
             foreach ($service->getCookies() as $cookie) {
                 $cookieName = $cookie['name'] ?? '';
-                if (!empty($cookieName)) {
-                    $config[$cookieName] = $category;
+                if (!empty($cookieName) && !in_array($cookieName, $config[$category], true)) {
+                    $config[$category][] = $cookieName;
                 }
             }
         }
-
-        // Add standard Magento cookies to necessary category
-        $config['PHPSESSID'] = 'necessary';
-        $config['form_key'] = 'necessary';
-        $config['mage-cache-storage'] = 'necessary';
-        $config['mage-cache-storage-section-invalidation'] = 'necessary';
-        $config['mage-cache-sessid'] = 'necessary';
-        $config['mage-messages'] = 'necessary';
-        $config['recently_viewed_product'] = 'preferences';
-        $config['recently_viewed_product_previous'] = 'preferences';
-        $config['recently_compared_product'] = 'preferences';
-        $config['recently_compared_product_previous'] = 'preferences';
-        $config['product_data_storage'] = 'preferences';
 
         return $this->jsonSerializer->serialize($config);
     }
