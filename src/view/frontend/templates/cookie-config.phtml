@@ -111,6 +111,7 @@ $cookieDeletionPatterns = $consentViewModel->getCookiePatternsForDeletionJson();
                 const cookie = hyva.getCookie(COOKIE_NAME);
                 if (cookie) {
                     try {
+                        // Hyva encodes when setting, so we need to decode when reading
                         return JSON.parse(decodeURIComponent(cookie));
                     } catch (e) {
                         return null;
@@ -125,7 +126,8 @@ $cookieDeletionPatterns = $consentViewModel->getCookiePatternsForDeletionJson();
                     categories: this.consent,
                     timestamp: Date.now()
                 };
-                hyva.setCookie(COOKIE_NAME, encodeURIComponent(JSON.stringify(data)), COOKIE_LIFETIME);
+                // Hyva's setCookie already encodes the value, so pass raw JSON
+                hyva.setCookie(COOKIE_NAME, JSON.stringify(data), COOKIE_LIFETIME);
             },
 
             toggleCategory(category) {
