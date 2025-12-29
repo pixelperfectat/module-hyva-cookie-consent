@@ -219,39 +219,45 @@ class CookieConsent implements ArgumentInterface
      */
     public function getCookieConsentConfigJson(): string
     {
-        // Build config with group as key and array of cookie names as value
-        $config = [
+        // Build config with group as key and cookie names as keys for O(1) deduplication
+        $configByKey = [
             'necessary' => [
-                'hyva_cookie_consent',  // Critical: consent cookie must be in necessary!
-                'PHPSESSID',
-                'form_key',
-                'mage-cache-storage',
-                'mage-cache-storage-section-invalidation',
-                'mage-cache-sessid',
-                'mage-messages',
+                'hyva_cookie_consent' => true,  // Critical: consent cookie must be in necessary!
+                'PHPSESSID' => true,
+                'form_key' => true,
+                'mage-cache-storage' => true,
+                'mage-cache-storage-section-invalidation' => true,
+                'mage-cache-sessid' => true,
+                'mage-messages' => true,
             ],
             'preferences' => [
-                'recently_viewed_product',
-                'recently_viewed_product_previous',
-                'recently_compared_product',
-                'recently_compared_product_previous',
-                'product_data_storage',
+                'recently_viewed_product' => true,
+                'recently_viewed_product_previous' => true,
+                'recently_compared_product' => true,
+                'recently_compared_product_previous' => true,
+                'product_data_storage' => true,
             ],
         ];
 
         // Add cookies from enabled services to their respective categories
         foreach ($this->servicePool->getEnabledServices() as $service) {
             $category = $service->getCategory();
-            if (!isset($config[$category])) {
-                $config[$category] = [];
+            if (!isset($configByKey[$category])) {
+                $configByKey[$category] = [];
             }
 
             foreach ($service->getCookies() as $cookie) {
                 $cookieName = $cookie['name'] ?? '';
-                if (!empty($cookieName) && !in_array($cookieName, $config[$category], true)) {
-                    $config[$category][] = $cookieName;
+                if (!empty($cookieName)) {
+                    $configByKey[$category][$cookieName] = true;
                 }
             }
+        }
+
+        // Convert from key-based to value-based arrays for JSON output
+        $config = [];
+        foreach ($configByKey as $category => $cookies) {
+            $config[$category] = array_keys($cookies);
         }
 
         return $this->jsonSerializer->serialize($config);
@@ -288,25 +294,26 @@ class CookieConsent implements ArgumentInterface
      */
     public function getCookiePatternsForDeletionJson(): string
     {
-        $patterns = [];
+        // Use cookie names as keys for O(1) deduplication
+        $patternsByKey = [];
 
         foreach ($this->servicePool->getAllServices() as $service) {
             $category = $service->getCategory();
-            if (!isset($patterns[$category])) {
-                $patterns[$category] = [];
+            if (!isset($patternsByKey[$category])) {
+                $patternsByKey[$category] = [];
             }
 
             foreach ($service->getCookies() as $cookie) {
                 $cookieName = $cookie['name'] ?? '';
-                if (!empty($cookieName) && !in_array($cookieName, $patterns[$category], true)) {
-                    $patterns[$category][] = $cookieName;
+                if (!empty($cookieName)) {
+                    $patternsByKey[$category][$cookieName] = true;
                 }
             }
         }
 
         // Add standard Magento cookies for preferences category
-        if (!isset($patterns['preferences'])) {
-            $patterns['preferences'] = [];
+        if (!isset($patternsByKey['preferences'])) {
+            $patternsByKey['preferences'] = [];
         }
         $preferenceCookies = [
             'recently_viewed_product',
@@ -316,9 +323,13 @@ class CookieConsent implements ArgumentInterface
             'product_data_storage'
         ];
         foreach ($preferenceCookies as $cookie) {
-            if (!in_array($cookie, $patterns['preferences'], true)) {
-                $patterns['preferences'][] = $cookie;
-            }
+            $patternsByKey['preferences'][$cookie] = true;
+        }
+
+        // Convert from key-based to value-based arrays for JSON output
+        $patterns = [];
+        foreach ($patternsByKey as $category => $cookies) {
+            $patterns[$category] = array_keys($cookies);
         }
 
         return $this->jsonSerializer->serialize($patterns);

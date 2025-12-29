@@ -19,6 +19,13 @@ class ServicePool
     private array $services = [];
 
     /**
+     * Cached array of enabled services (null = not yet computed)
+     *
+     * @var array<string, ServiceInterface>|null
+     */
+    private ?array $enabledServicesCache = null;
+
+    /**
      * @param ServiceFactory $serviceFactory Factory for creating Service instances
      * @param array<string, array<string, mixed>> $services Configuration from di.xml
      */
@@ -55,14 +62,21 @@ class ServicePool
     /**
      * Get all enabled services
      *
+     * Results are cached for the duration of the request to avoid
+     * repeated config reads when this method is called multiple times.
+     *
      * @return array<string, ServiceInterface>
      */
     public function getEnabledServices(): array
     {
-        return array_filter(
-            $this->services,
-            static fn(ServiceInterface $service) => $service->isEnabled()
-        );
+        if ($this->enabledServicesCache === null) {
+            $this->enabledServicesCache = array_filter(
+                $this->services,
+                static fn(ServiceInterface $service) => $service->isEnabled()
+            );
+        }
+
+        return $this->enabledServicesCache;
     }
 
     /**

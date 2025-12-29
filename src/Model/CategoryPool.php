@@ -19,6 +19,13 @@ class CategoryPool
     private array $categories = [];
 
     /**
+     * Cached sorted categories (null = not yet computed)
+     *
+     * @var array<string, CategoryInterface>|null
+     */
+    private ?array $sortedCategoriesCache = null;
+
+    /**
      * @param CategoryFactory $categoryFactory Factory for creating Category instances
      * @param array<string, array<string, mixed>> $categories Configuration from di.xml
      */
@@ -40,15 +47,22 @@ class CategoryPool
     /**
      * Get all categories sorted by sort_order
      *
+     * Results are cached for the duration of the request to avoid
+     * repeated sorting when this method is called multiple times.
+     *
      * @return array<string, CategoryInterface>
      */
     public function getCategories(): array
     {
-        $categories = $this->categories;
-        uasort($categories, static fn(CategoryInterface $a, CategoryInterface $b) =>
-            $a->getSortOrder() <=> $b->getSortOrder()
-        );
-        return $categories;
+        if ($this->sortedCategoriesCache === null) {
+            $categories = $this->categories;
+            uasort($categories, static fn(CategoryInterface $a, CategoryInterface $b) =>
+                $a->getSortOrder() <=> $b->getSortOrder()
+            );
+            $this->sortedCategoriesCache = $categories;
+        }
+
+        return $this->sortedCategoriesCache;
     }
 
     /**

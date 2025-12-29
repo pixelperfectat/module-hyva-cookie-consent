@@ -19,6 +19,18 @@ class Service implements ServiceInterface
     private const CONFIG_PATH_PREFIX = 'hyva_cookie_consent/services/';
 
     /**
+     * Cached enabled state (null = not yet computed)
+     */
+    private ?bool $isEnabledCache = null;
+
+    /**
+     * Cache for config values by field name
+     *
+     * @var array<string, mixed>
+     */
+    private array $configCache = [];
+
+    /**
      * @param ScopeConfigInterface $scopeConfig Magento configuration reader
      * @param string $code Service code identifier
      * @param string $title Display title
@@ -91,14 +103,20 @@ class Service implements ServiceInterface
      */
     public function isEnabled(): bool
     {
+        if ($this->isEnabledCache !== null) {
+            return $this->isEnabledCache;
+        }
+
         $path = self::CONFIG_PATH_PREFIX . $this->code . '/enabled';
         $value = $this->scopeConfig->getValue($path, ScopeInterface::SCOPE_STORE);
 
         if ($value === null) {
-            return $this->enabledByDefault;
+            $this->isEnabledCache = $this->enabledByDefault;
+        } else {
+            $this->isEnabledCache = (bool) $value;
         }
 
-        return (bool) $value;
+        return $this->isEnabledCache;
     }
 
     /**
@@ -122,8 +140,12 @@ class Service implements ServiceInterface
      */
     public function getConfigValue(string $field): mixed
     {
-        $path = self::CONFIG_PATH_PREFIX . $this->code . '/' . $field;
-        return $this->scopeConfig->getValue($path, ScopeInterface::SCOPE_STORE);
+        if (!array_key_exists($field, $this->configCache)) {
+            $path = self::CONFIG_PATH_PREFIX . $this->code . '/' . $field;
+            $this->configCache[$field] = $this->scopeConfig->getValue($path, ScopeInterface::SCOPE_STORE);
+        }
+
+        return $this->configCache[$field];
     }
 
     /**
