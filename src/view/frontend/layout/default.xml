@@ -40,11 +40,72 @@
                    after="hyva.cookie.consent.banner"/>
         </referenceContainer>
 
-        <!-- Service Script Loader (loads enabled tracking services) -->
+        <!--
+            Service Script Blocks (FPC-compatible static blocks with ifconfig conditions)
+            Each service is defined statically and only rendered if enabled in configuration.
+            This approach ensures Full Page Cache compatibility as blocks are determined
+            at layout compilation time, not at runtime.
+        -->
         <referenceContainer name="before.body.end">
-            <block name="hyva.cookie.consent.scripts"
-                   template="Pixelperfect_HyvaCookieConsent::script-loader.phtml"
-                   after="hyva.cookie.consent.floating.button"/>
+            <!-- Google Tag Manager -->
+            <block name="hyva.cookie.consent.service.gtm"
+                   template="Pixelperfect_HyvaCookieConsent::services/google-tag-manager.phtml"
+                   ifconfig="hyva_cookie_consent/services/google_tag_manager/enabled"
+                   after="hyva.cookie.consent.floating.button">
+                <arguments>
+                    <argument name="view_model" xsi:type="object">Pixelperfect\HyvaCookieConsent\ViewModel\CookieConsent</argument>
+                </arguments>
+            </block>
+
+            <!-- Google Analytics 4 -->
+            <block name="hyva.cookie.consent.service.ga4"
+                   template="Pixelperfect_HyvaCookieConsent::services/google-analytics-4.phtml"
+                   ifconfig="hyva_cookie_consent/services/google_analytics_4/enabled"
+                   after="hyva.cookie.consent.service.gtm">
+                <arguments>
+                    <argument name="view_model" xsi:type="object">Pixelperfect\HyvaCookieConsent\ViewModel\CookieConsent</argument>
+                </arguments>
+            </block>
+
+            <!-- Facebook Pixel -->
+            <block name="hyva.cookie.consent.service.fb"
+                   template="Pixelperfect_HyvaCookieConsent::services/facebook-pixel.phtml"
+                   ifconfig="hyva_cookie_consent/services/facebook_pixel/enabled"
+                   after="hyva.cookie.consent.service.ga4">
+                <arguments>
+                    <argument name="view_model" xsi:type="object">Pixelperfect\HyvaCookieConsent\ViewModel\CookieConsent</argument>
+                </arguments>
+            </block>
+
+            <!-- Microsoft Clarity -->
+            <block name="hyva.cookie.consent.service.clarity"
+                   template="Pixelperfect_HyvaCookieConsent::services/microsoft-clarity.phtml"
+                   ifconfig="hyva_cookie_consent/services/microsoft_clarity/enabled"
+                   after="hyva.cookie.consent.service.fb">
+                <arguments>
+                    <argument name="view_model" xsi:type="object">Pixelperfect\HyvaCookieConsent\ViewModel\CookieConsent</argument>
+                </arguments>
+            </block>
+
+            <!-- Hotjar -->
+            <block name="hyva.cookie.consent.service.hotjar"
+                   template="Pixelperfect_HyvaCookieConsent::services/hotjar.phtml"
+                   ifconfig="hyva_cookie_consent/services/hotjar/enabled"
+                   after="hyva.cookie.consent.service.clarity">
+                <arguments>
+                    <argument name="view_model" xsi:type="object">Pixelperfect\HyvaCookieConsent\ViewModel\CookieConsent</argument>
+                </arguments>
+            </block>
+
+            <!-- Matomo -->
+            <block name="hyva.cookie.consent.service.matomo"
+                   template="Pixelperfect_HyvaCookieConsent::services/matomo.phtml"
+                   ifconfig="hyva_cookie_consent/services/matomo/enabled"
+                   after="hyva.cookie.consent.service.hotjar">
+                <arguments>
+                    <argument name="view_model" xsi:type="object">Pixelperfect\HyvaCookieConsent\ViewModel\CookieConsent</argument>
+                </arguments>
+            </block>
         </referenceContainer>
     </body>
 </page>

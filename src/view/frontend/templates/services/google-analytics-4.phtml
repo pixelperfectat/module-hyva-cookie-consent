@@ -5,16 +5,31 @@ declare(strict_types=1);
 use Hyva\Theme\Model\ViewModelRegistry;
 use Hyva\Theme\ViewModel\HyvaCsp;
 use Magento\Framework\Escaper;
-use Pixelperfect\HyvaCookieConsent\Api\Data\ServiceInterface;
+use Magento\Framework\View\Element\Template;
+use Pixelperfect\HyvaCookieConsent\ViewModel\CookieConsent;
 
 /** @var Escaper $escaper */
-/** @var ServiceInterface $service */
+/** @var Template $block */
 /** @var ViewModelRegistry $viewModels */
 
-$service = $block->getData('service');
-$viewModels = $block->getData('view_models');
+// Get ViewModel from layout XML argument or fallback to view_models registry
+$consentViewModel = $block->getData('view_model');
+if (!$consentViewModel instanceof CookieConsent) {
+    $viewModels = $block->getData('view_models');
+    $consentViewModel = $viewModels ? $viewModels->require(CookieConsent::class) : null;
+}
+
+if (!$consentViewModel) {
+    return;
+}
 
 $hyvaCsp = $viewModels->require(HyvaCsp::class);
+
+// Get service from ServicePool
+$service = $consentViewModel->getServicePool()->getService('google_analytics_4');
+if (!$service || !$service->isEnabled()) {
+    return;
+}
 
 $measurementId = $service->getConfigValue('measurement_id');
 
