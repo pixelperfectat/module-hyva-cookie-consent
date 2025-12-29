@@ -382,16 +382,24 @@ Use the portable configuration script:
 ./scripts/configure-services.sh strict
 ```
 
-The script automatically detects your Magento CLI:
-- Standard Magento: `bin/magento`
-- Mark Shust's Docker: `bin/cli bin/magento`
-- n98-magerun2 (if installed)
+The script automatically:
+- Detects your Magento CLI (bin/magento, bin/cli, or n98-magerun2)
+- **Saves current config to backup** before modifying
+- Applies test configuration from your `.env` file
 
 **Step 3: Run tests:**
 
 ```bash
 npm test
 ```
+
+**Step 4: Restore original configuration:**
+
+```bash
+./scripts/reset-services.sh
+```
+
+This restores your original Magento configuration from the backup created in Step 2.
 
 #### GTM Mode Testing
 
@@ -410,10 +418,12 @@ To test both modes:
 # Test infrastructure mode
 ./scripts/configure-services.sh infrastructure
 npm test
+./scripts/reset-services.sh
 
 # Then test strict mode
 ./scripts/configure-services.sh strict
 npm test
+./scripts/reset-services.sh
 ```
 
 #### Test Coverage

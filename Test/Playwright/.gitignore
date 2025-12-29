@@ -3,3 +3,4 @@ test-artifacts/
 test-results/
 playwright-report/
 .env
+.config-backup

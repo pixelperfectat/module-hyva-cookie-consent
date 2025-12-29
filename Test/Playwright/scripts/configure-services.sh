@@ -53,15 +53,9 @@ echo "Magento root: $PROJECT_ROOT"
 
 # Detect available Magento CLI
 detect_magento_cli() {
-    # Check for bin/magento (standard or containerized)
+    # Check for bin/magento (works for standard Magento and Docker setups like Mark Shust's)
     if [ -x "$PROJECT_ROOT/bin/magento" ]; then
         echo "$PROJECT_ROOT/bin/magento"
-        return 0
-    fi
-
-    # Check for Mark Shust's Docker setup (bin/cli)
-    if [ -x "$PROJECT_ROOT/bin/cli" ]; then
-        echo "$PROJECT_ROOT/bin/cli bin/magento"
         return 0
     fi
 
@@ -103,6 +97,19 @@ fi
 echo "Using Magento CLI: $MAGENTO_CLI"
 echo ""
 
+# Backup file location
+BACKUP_FILE="$PLAYWRIGHT_DIR/.config-backup"
+
+# Helper function to get current config value
+get_config() {
+    local path="$1"
+    # Try config:show first (works for database and env.php values)
+    local value
+    value=$($MAGENTO_CLI config:show "$path" 2>/dev/null || echo "")
+    # Trim whitespace
+    echo "$value" | tr -d '\n' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//'
+}
+
 # Helper function to set config
 set_config() {
     local path="$1"
@@ -118,11 +125,50 @@ set_config() {
     return 0
 }
 
+# Save current config to backup file before modifying
+save_backup() {
+    echo "Saving current configuration to backup..."
+
+    # All config paths we modify
+    local paths=(
+        "hyva_cookie_consent/general/enabled"
+        "hyva_cookie_consent/services/google_tag_manager/enabled"
+        "hyva_cookie_consent/services/google_tag_manager/container_id"
+        "hyva_cookie_consent/services/google_tag_manager/loading_strategy"
+        "hyva_cookie_consent/services/google_analytics_4/enabled"
+        "hyva_cookie_consent/services/google_analytics_4/measurement_id"
+        "hyva_cookie_consent/services/facebook_pixel/enabled"
+        "hyva_cookie_consent/services/facebook_pixel/pixel_id"
+        "hyva_cookie_consent/services/hotjar/enabled"
+        "hyva_cookie_consent/services/hotjar/site_id"
+        "hyva_cookie_consent/services/microsoft_clarity/enabled"
+        "hyva_cookie_consent/services/microsoft_clarity/project_id"
+        "hyva_cookie_consent/services/matomo/enabled"
+        "hyva_cookie_consent/services/matomo/tracker_url"
+        "hyva_cookie_consent/services/matomo/site_id"
+    )
+
+    # Create backup file
+    echo "# Cookie Consent Config Backup - $(date)" > "$BACKUP_FILE"
+    echo "# Restore with: ./reset-services.sh" >> "$BACKUP_FILE"
+    echo "" >> "$BACKUP_FILE"
+
+    for path in "${paths[@]}"; do
+        local value
+        value=$(get_config "$path")
+        echo "${path}=${value}" >> "$BACKUP_FILE"
+    done
+
+    echo "Backup saved to $BACKUP_FILE"
+    echo ""
+}
+
 # Load .env file if exists
 if [ -f "$PLAYWRIGHT_DIR/.env" ]; then
     echo "Loading configuration from .env..."
     # Export variables, ignoring comments and empty lines
     set -a
+    # shellcheck source=/dev/null
     source <(grep -v '^#' "$PLAYWRIGHT_DIR/.env" | grep -v '^$' | sed 's/\r$//')
     set +a
 else
@@ -131,6 +177,16 @@ else
 fi
 
 echo ""
+
+# Save current configuration to backup before modifying
+if [ ! -f "$BACKUP_FILE" ]; then
+    save_backup
+else
+    echo "Backup already exists at $BACKUP_FILE"
+    echo "Run ./reset-services.sh first to restore and remove the backup."
+    echo ""
+fi
+
 echo "Configuring services..."
 echo ""
 
@@ -209,4 +265,5 @@ echo ""
 echo "GTM Mode: $GTM_MODE"
 echo ""
 echo "Run tests with: npm test"
+echo "Restore original config with: ./scripts/reset-services.sh"
 echo "============================================================================="
