@@ -342,6 +342,80 @@ npm run test:headed
 npm run test:debug
 ```
 
+#### Configuring Service Tests
+
+The test suite supports testing all 6 built-in services. Tests are **skipped automatically** if the service ID is not configured, allowing module users to test only the services they use.
+
+**Step 1: Configure `.env` file:**
+
+```bash
+cd Test/Playwright
+cp .env.example .env
+```
+
+Edit `.env` with your test service IDs:
+
+```bash
+# Required - your Magento store URL
+PLAYWRIGHT_BASE_URL=https://your-store.test
+
+# Optional service IDs (tests skip if not set)
+TEST_GTM_CONTAINER_ID=GTM-XXXXXX
+TEST_GTM_MODE=infrastructure    # or "strict"
+TEST_GA4_MEASUREMENT_ID=G-XXXXXXX
+TEST_FB_PIXEL_ID=1234567890
+TEST_HOTJAR_SITE_ID=1234567
+TEST_CLARITY_PROJECT_ID=xxxxxxxxxx
+TEST_MATOMO_URL=https://matomo.example.com
+TEST_MATOMO_SITE_ID=1
+```
+
+**Step 2: Configure Magento services:**
+
+Use the portable configuration script:
+
+```bash
+# Configure services in infrastructure mode
+./scripts/configure-services.sh infrastructure
+
+# Or configure for strict mode testing
+./scripts/configure-services.sh strict
+```
+
+The script automatically detects your Magento CLI:
+- Standard Magento: `bin/magento`
+- Mark Shust's Docker: `bin/cli bin/magento`
+- n98-magerun2 (if installed)
+
+**Step 3: Run tests:**
+
+```bash
+npm test
+```
+
+#### GTM Mode Testing
+
+GTM has two loading strategies that require different test configurations:
+
+| Mode | Script Loading | Tests File |
+|------|---------------|------------|
+| **Infrastructure** | GTM loads immediately; consent pushed to dataLayer | `gtm-infrastructure.spec.js` |
+| **Strict** | GTM blocked until marketing consent | `gtm-strict.spec.js` |
+
+Set `TEST_GTM_MODE` in your `.env` to match your Magento configuration. Only the matching test file will run.
+
+To test both modes:
+
+```bash
+# Test infrastructure mode
+./scripts/configure-services.sh infrastructure
+npm test
+
+# Then test strict mode
+./scripts/configure-services.sh strict
+npm test
+```
+
 #### Test Coverage
 
 **Cookie Consent Banner** (`cookie-consent.spec.js`):
@@ -350,19 +424,23 @@ npm run test:debug
 - Accept All grants consent and sets cookies
 - Reject All denies consent and blocks tracking
 
-**GTM Infrastructure Mode + Consent Mode v2**:
+**GTM Infrastructure Mode** (`gtm-infrastructure.spec.js`):
+- GTM script loads immediately without consent
 - `consent_default` event fires with denied state on page load
 - `consent_update` event fires after user accepts/rejects
+- Consent persists on page reload
 
-**Consent Persistence**:
-- Consent persists across page reloads
+**GTM Strict Mode** (`gtm-strict.spec.js`):
+- GTM blocked in template before marketing consent
+- GTM loads after marketing consent granted
+- Analytics consent alone does NOT load GTM
 
-**Floating Button**:
-- Floating button reopens consent settings after acceptance
-
-**Cookie Config Structure**:
-- `cookie_consent_config` uses correct Hyva format
-- `cookie_consent_groups` initialized correctly
+**Service Templates** (`service-templates.spec.js`):
+- GA4: Template structure, gtag blocked/activated
+- Facebook Pixel: Marketing category, fbq blocked/activated
+- Hotjar: Analytics category, hj blocked/activated
+- Microsoft Clarity: Analytics category, clarity blocked/activated
+- Matomo: Analytics category, _paq blocked/activated
 
 **Cookie Deletion** (`cookie-deletion.spec.js`):
 - GA cookies deleted when analytics consent is revoked
