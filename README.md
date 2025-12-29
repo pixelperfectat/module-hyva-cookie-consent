@@ -434,6 +434,53 @@ npm test
 - Accept All grants consent and sets cookies
 - Reject All denies consent and blocks tracking
 
+**Banner Customization Workflow** (`banner-customization.spec.js`):
+- Customize button opens settings view with category toggles
+- Category toggles can be clicked and reflect state changes
+- Save Preferences saves selected categories correctly
+- Back button returns to main view without saving
+- Reopening settings shows previously saved preferences
+- Necessary cookies toggle is always active and cannot be disabled
+
+**Consent Version Upgrade** (`consent-version.spec.js`):
+- Consent cookie includes version number
+- Consent persists when version matches
+- Banner shows again when consent version is outdated
+- Consent state is reset when version is outdated
+- Fresh consent after version mismatch uses current version
+
+**Partial Consent States** (`partial-consent.spec.js`):
+- User can grant analytics but not marketing
+- User can grant marketing but not analytics
+- Toggles reflect previous choices when reopening settings
+- Partial consent persists across page reloads
+- Analytics scripts load with analytics consent only
+- User can change/revoke consent using Alpine component API
+
+**Error Handling** (`error-handling.spec.js`):
+- Page loads without errors when no consent cookie exists
+- Malformed consent cookie is handled gracefully
+- Partially corrupted consent cookie shows banner
+- Consent cookie with wrong data types is handled
+- Empty consent cookie triggers banner display
+- Double-encoded cookie value is handled
+- Consent buttons remain functional after page errors
+- Alpine component handles missing config gracefully
+
+**Accessibility** (`accessibility.spec.js`):
+- Banner has proper ARIA role and labels
+- Buttons have accessible names
+- Category toggles have proper ARIA attributes (role="switch", aria-checked)
+- Toggle aria-checked updates when clicked
+- Keyboard navigation works for main buttons
+- Enter key activates focused button
+- Space key activates focused toggle
+- Floating button is keyboard accessible
+- Semantic heading structure in banner
+- Links have accessible text
+- Color contrast is maintained with toggle states
+- No keyboard trap in banner
+
 **GTM Infrastructure Mode** (`gtm-infrastructure.spec.js`):
 - GTM script loads immediately without consent
 - `consent_default` event fires with denied state on page load
