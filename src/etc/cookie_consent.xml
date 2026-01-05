@@ -1,0 +1,318 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Cookie Consent Configuration
+ *
+ * This file defines all cookie categories and services for the cookie consent banner.
+ *
+ * Services WITHOUT a <template> element are informational only (always active).
+ * Services WITH a <template> element are blockable (require user consent).
+ *
+ * Other modules can add their own services by creating etc/cookie_consent.xml
+ */
+-->
+<cookie_consent xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                xsi:noNamespaceSchemaLocation="urn:magento:module:Pixelperfect_HyvaCookieConsent:etc/cookie_consent.xsd">
+
+    <!-- ==================== CATEGORIES ==================== -->
+    <categories>
+        <category code="necessary" required="true" sort_order="10">
+            <title>Strictly Necessary</title>
+            <description>Essential cookies required for the website to function properly. These cannot be disabled.</description>
+        </category>
+        <category code="analytics" required="false" sort_order="20">
+            <title>Analytics</title>
+            <description>Help us understand how visitors interact with our website by collecting anonymous data.</description>
+        </category>
+        <category code="marketing" required="false" sort_order="30">
+            <title>Marketing</title>
+            <description>Used to deliver personalized advertisements and measure their effectiveness.</description>
+        </category>
+        <category code="preferences" required="false" sort_order="40">
+            <title>Preferences</title>
+            <description>Remember your preferences and personalize your experience.</description>
+        </category>
+    </categories>
+
+    <!-- ==================== SERVICES ==================== -->
+    <services>
+        <!-- ========== NECESSARY SERVICES (no template = informational only) ========== -->
+
+        <!-- Module consent cookie -->
+        <service code="hyva_consent" category="necessary">
+            <title>Cookie Consent</title>
+            <description>Stores your cookie consent preferences</description>
+            <cookies>
+                <cookie name="hyva_cookie_consent" duration="1 year">
+                    <description>Remembers your cookie consent choices</description>
+                </cookie>
+            </cookies>
+        </service>
+
+        <!-- Session and Security -->
+        <service code="magento_session" category="necessary">
+            <title>Session Management</title>
+            <description>Manages your shopping session and protects against security threats</description>
+            <cookies>
+                <cookie name="PHPSESSID" duration="Session">
+                    <description>Maintains your session while browsing</description>
+                </cookie>
+                <cookie name="form_key" duration="Session">
+                    <description>Security token preventing cross-site request forgery attacks</description>
+                </cookie>
+            </cookies>
+        </service>
+
+        <!-- Cache Management -->
+        <service code="magento_cache" category="necessary">
+            <title>Page Performance</title>
+            <description>Improves page loading speed and ensures content updates correctly</description>
+            <cookies>
+                <cookie name="mage-cache-storage" duration="Session">
+                    <description>Local storage of visitor-specific content for faster page loads</description>
+                </cookie>
+                <cookie name="mage-cache-storage-section-invalidation" duration="Session">
+                    <description>Tracks which page sections need to be refreshed</description>
+                </cookie>
+                <cookie name="mage-cache-sessid" duration="Session">
+                    <description>Determines when to clear local browser cache after session ends</description>
+                </cookie>
+                <cookie name="private_content_version" duration="Session">
+                    <description>Ensures personalized content is not served from server cache</description>
+                </cookie>
+                <cookie name="X-Magento-Vary" duration="Session">
+                    <description>Indicates when a cached page needs to be refreshed</description>
+                </cookie>
+            </cookies>
+        </service>
+
+        <!-- Shopping Cart and Section Data -->
+        <service code="magento_cart" category="necessary">
+            <title>Shopping Cart</title>
+            <description>Essential for your shopping cart to function correctly</description>
+            <cookies>
+                <cookie name="section_data_ids" duration="Session">
+                    <description>Stores customer-specific shopping data like cart contents</description>
+                </cookie>
+                <cookie name="section_data_clean" duration="Session">
+                    <description>Signals when shopping data needs to be refreshed</description>
+                </cookie>
+            </cookies>
+        </service>
+
+        <!-- User Notifications -->
+        <service code="magento_messages" category="necessary">
+            <title>Notifications</title>
+            <description>Displays important messages like order confirmations and errors</description>
+            <cookies>
+                <cookie name="mage-messages" duration="Session">
+                    <description>Stores messages to display to you, such as error or success notifications</description>
+                </cookie>
+            </cookies>
+        </service>
+
+        <!-- Store and Locale -->
+        <service code="magento_store" category="necessary">
+            <title>Store Selection</title>
+            <description>Remembers your selected store view and language</description>
+            <cookies>
+                <cookie name="store" duration="1 year">
+                    <description>Tracks the store view or language you selected</description>
+                </cookie>
+            </cookies>
+        </service>
+
+        <!-- Guest and Login Functionality -->
+        <service code="magento_guest" category="necessary">
+            <title>Guest Checkout</title>
+            <description>Enables order tracking and login redirects for guests</description>
+            <cookies>
+                <cookie name="guest-view" duration="Session">
+                    <description>Links guest orders to your browser for order tracking</description>
+                </cookie>
+                <cookie name="login_redirect" duration="Session">
+                    <description>Saves the page to redirect you to after logging in</description>
+                </cookie>
+            </cookies>
+        </service>
+
+        <!-- Persistent Shopping Cart -->
+        <service code="magento_persistent" category="necessary">
+            <title>Persistent Cart</title>
+            <description>Restores your shopping cart when you return to the website</description>
+            <cookies>
+                <cookie name="persistent_shopping_cart" duration="1 year">
+                    <description>Remembers your cart contents between visits</description>
+                </cookie>
+            </cookies>
+        </service>
+
+        <!-- Magento's Native Consent Cookie -->
+        <service code="magento_consent" category="necessary">
+            <title>Magento Cookie Notice</title>
+            <description>Magento's built-in cookie consent tracking</description>
+            <cookies>
+                <cookie name="user_allowed_save_cookie" duration="1 year">
+                    <description>Indicates you have accepted the cookie policy</description>
+                </cookie>
+            </cookies>
+        </service>
+
+        <!-- ========== PREFERENCES SERVICES (no template = informational only) ========== -->
+
+        <!-- Recently Viewed Products -->
+        <service code="magento_recently_viewed" category="preferences">
+            <title>Recently Viewed Products</title>
+            <description>Shows products you have recently looked at</description>
+            <cookies>
+                <cookie name="recently_viewed_product" duration="Session">
+                    <description>Stores IDs of products you have viewed</description>
+                </cookie>
+                <cookie name="recently_viewed_product_previous" duration="Session">
+                    <description>Stores previously viewed products from earlier sessions</description>
+                </cookie>
+            </cookies>
+        </service>
+
+        <!-- Product Comparison -->
+        <service code="magento_compare" category="preferences">
+            <title>Product Comparison</title>
+            <description>Enables the product comparison feature</description>
+            <cookies>
+                <cookie name="recently_compared_product" duration="Session">
+                    <description>Stores IDs of products you are comparing</description>
+                </cookie>
+                <cookie name="recently_compared_product_previous" duration="Session">
+                    <description>Stores previously compared products from earlier sessions</description>
+                </cookie>
+            </cookies>
+        </service>
+
+        <!-- Product Data Storage -->
+        <service code="magento_product_data" category="preferences">
+            <title>Product Data Cache</title>
+            <description>Caches product information for faster browsing</description>
+            <cookies>
+                <cookie name="product_data_storage" duration="Session">
+                    <description>Supports recently viewed and compare product features</description>
+                </cookie>
+            </cookies>
+        </service>
+
+        <!-- ========== ANALYTICS SERVICES (with template = blockable) ========== -->
+
+        <!-- Google Tag Manager -->
+        <service code="google_tag_manager" category="analytics">
+            <title>Google Tag Manager</title>
+            <description>Tag management system that loads other tracking services</description>
+            <template>Pixelperfect_HyvaCookieConsent::services/google-tag-manager.phtml</template>
+            <enabled_by_default>false</enabled_by_default>
+            <is_tag_manager>true</is_tag_manager>
+            <config_fields>
+                <field code="container_id" type="text" required="true"/>
+                <field code="loading_strategy" type="select" required="false"/>
+            </config_fields>
+            <cookies/>
+        </service>
+
+        <!-- Google Analytics 4 -->
+        <service code="google_analytics_4" category="analytics">
+            <title>Google Analytics 4</title>
+            <description>Web analytics service that tracks and reports website traffic</description>
+            <template>Pixelperfect_HyvaCookieConsent::services/google-analytics-4.phtml</template>
+            <enabled_by_default>false</enabled_by_default>
+            <config_fields>
+                <field code="measurement_id" type="text" required="true"/>
+                <field code="loading_method" type="select" required="false"/>
+            </config_fields>
+            <cookies>
+                <cookie name="_ga" duration="2 years">
+                    <description>Distinguishes unique users</description>
+                </cookie>
+                <cookie name="_ga_*" duration="2 years">
+                    <description>Maintains session state</description>
+                </cookie>
+            </cookies>
+        </service>
+
+        <!-- Microsoft Clarity -->
+        <service code="microsoft_clarity" category="analytics">
+            <title>Microsoft Clarity</title>
+            <description>Behavioral analytics tool that captures user interactions</description>
+            <template>Pixelperfect_HyvaCookieConsent::services/microsoft-clarity.phtml</template>
+            <enabled_by_default>false</enabled_by_default>
+            <config_fields>
+                <field code="project_id" type="text" required="true"/>
+                <field code="loading_method" type="select" required="false"/>
+            </config_fields>
+            <cookies>
+                <cookie name="_clck" duration="1 year">
+                    <description>Stores Clarity user ID</description>
+                </cookie>
+                <cookie name="_clsk" duration="1 day">
+                    <description>Connects pageviews into a session</description>
+                </cookie>
+            </cookies>
+        </service>
+
+        <!-- Hotjar -->
+        <service code="hotjar" category="analytics">
+            <title>Hotjar</title>
+            <description>Heatmaps and session recordings to understand user behavior</description>
+            <template>Pixelperfect_HyvaCookieConsent::services/hotjar.phtml</template>
+            <enabled_by_default>false</enabled_by_default>
+            <config_fields>
+                <field code="site_id" type="text" required="true"/>
+                <field code="loading_method" type="select" required="false"/>
+            </config_fields>
+            <cookies>
+                <cookie name="_hjid" duration="1 year">
+                    <description>Stores unique visitor ID</description>
+                </cookie>
+                <cookie name="_hjSessionUser_*" duration="1 year">
+                    <description>Ensures data from subsequent visits are attributed to same user</description>
+                </cookie>
+            </cookies>
+        </service>
+
+        <!-- Matomo -->
+        <service code="matomo" category="analytics">
+            <title>Matomo</title>
+            <description>Privacy-focused web analytics platform</description>
+            <template>Pixelperfect_HyvaCookieConsent::services/matomo.phtml</template>
+            <enabled_by_default>false</enabled_by_default>
+            <config_fields>
+                <field code="site_id" type="text" required="true"/>
+                <field code="tracker_url" type="text" required="true"/>
+                <field code="loading_method" type="select" required="false"/>
+            </config_fields>
+            <cookies>
+                <cookie name="_pk_id.*" duration="13 months">
+                    <description>Stores unique visitor ID</description>
+                </cookie>
+                <cookie name="_pk_ses.*" duration="30 minutes">
+                    <description>Temporary session cookie</description>
+                </cookie>
+            </cookies>
+        </service>
+
+        <!-- ========== MARKETING SERVICES (with template = blockable) ========== -->
+
+        <!-- Facebook Pixel -->
+        <service code="facebook_pixel" category="marketing">
+            <title>Facebook Pixel</title>
+            <description>Tracks conversions and enables remarketing on Facebook and Instagram</description>
+            <template>Pixelperfect_HyvaCookieConsent::services/facebook-pixel.phtml</template>
+            <enabled_by_default>false</enabled_by_default>
+            <config_fields>
+                <field code="pixel_id" type="text" required="true"/>
+                <field code="loading_method" type="select" required="false"/>
+            </config_fields>
+            <cookies>
+                <cookie name="_fbp" duration="3 months">
+                    <description>Stores browser ID for Facebook advertising</description>
+                </cookie>
+            </cookies>
+        </service>
+    </services>
+</cookie_consent>
