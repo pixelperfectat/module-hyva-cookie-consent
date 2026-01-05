@@ -1,5 +1,6 @@
 {
     "name": "pixelperfectat/module-hyva-cookie-consent",
+    "version": "0.2.0",
     "description": "GDPR/ePrivacy-compliant cookie consent management for Hyva theme",
     "type": "magento2-module",
     "license": "MIT",
