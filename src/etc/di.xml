@@ -8,163 +8,34 @@
     <preference for="Pixelperfect\HyvaCookieConsent\Api\Data\ServiceInterface"
                 type="Pixelperfect\HyvaCookieConsent\Model\Service"/>
 
-    <!-- Category Pool with default categories -->
-    <type name="Pixelperfect\HyvaCookieConsent\Model\CategoryPool">
+    <!-- Cookie Consent XML Configuration Reader -->
+    <type name="Pixelperfect\HyvaCookieConsent\Model\Config\CookieConsent\Reader">
         <arguments>
-            <argument name="categories" xsi:type="array">
-                <item name="necessary" xsi:type="array">
-                    <item name="code" xsi:type="string">necessary</item>
-                    <item name="title" xsi:type="string">Strictly Necessary</item>
-                    <item name="description" xsi:type="string">Essential cookies required for the website to function properly. These cannot be disabled.</item>
-                    <item name="required" xsi:type="boolean">true</item>
-                    <item name="sort_order" xsi:type="number">10</item>
-                </item>
-                <item name="analytics" xsi:type="array">
-                    <item name="code" xsi:type="string">analytics</item>
-                    <item name="title" xsi:type="string">Analytics</item>
-                    <item name="description" xsi:type="string">Help us understand how visitors interact with our website by collecting anonymous data.</item>
-                    <item name="required" xsi:type="boolean">false</item>
-                    <item name="sort_order" xsi:type="number">20</item>
-                </item>
-                <item name="marketing" xsi:type="array">
-                    <item name="code" xsi:type="string">marketing</item>
-                    <item name="title" xsi:type="string">Marketing</item>
-                    <item name="description" xsi:type="string">Used to deliver personalized advertisements and measure their effectiveness.</item>
-                    <item name="required" xsi:type="boolean">false</item>
-                    <item name="sort_order" xsi:type="number">30</item>
-                </item>
-                <item name="preferences" xsi:type="array">
-                    <item name="code" xsi:type="string">preferences</item>
-                    <item name="title" xsi:type="string">Preferences</item>
-                    <item name="description" xsi:type="string">Remember your preferences and personalize your experience.</item>
-                    <item name="required" xsi:type="boolean">false</item>
-                    <item name="sort_order" xsi:type="number">40</item>
-                </item>
-            </argument>
+            <argument name="fileName" xsi:type="string">cookie_consent.xml</argument>
+            <argument name="converter" xsi:type="object">Pixelperfect\HyvaCookieConsent\Model\Config\CookieConsent\Converter</argument>
+            <argument name="schemaLocator" xsi:type="object">Pixelperfect\HyvaCookieConsent\Model\Config\CookieConsent\SchemaLocator</argument>
         </arguments>
     </type>
 
-    <!-- Service Pool with default services -->
+    <!-- Cookie Consent Configuration Data (with caching) -->
+    <type name="Pixelperfect\HyvaCookieConsent\Model\Config\CookieConsent\Data">
+        <arguments>
+            <argument name="reader" xsi:type="object">Pixelperfect\HyvaCookieConsent\Model\Config\CookieConsent\Reader</argument>
+            <argument name="cacheId" xsi:type="string">cookie_consent_config</argument>
+        </arguments>
+    </type>
+
+    <!-- Category Pool - reads categories from cookie_consent.xml -->
+    <type name="Pixelperfect\HyvaCookieConsent\Model\CategoryPool">
+        <arguments>
+            <argument name="configData" xsi:type="object">Pixelperfect\HyvaCookieConsent\Model\Config\CookieConsent\Data</argument>
+        </arguments>
+    </type>
+
+    <!-- Service Pool - reads services from cookie_consent.xml -->
     <type name="Pixelperfect\HyvaCookieConsent\Model\ServicePool">
         <arguments>
-            <argument name="services" xsi:type="array">
-                <!-- Google Tag Manager -->
-                <item name="google_tag_manager" xsi:type="array">
-                    <item name="code" xsi:type="string">google_tag_manager</item>
-                    <item name="title" xsi:type="string">Google Tag Manager</item>
-                    <item name="description" xsi:type="string">Tag management system that loads other tracking services</item>
-                    <item name="category" xsi:type="string">analytics</item>
-                    <item name="is_tag_manager" xsi:type="boolean">true</item>
-                    <item name="template" xsi:type="string">Pixelperfect_HyvaCookieConsent::services/google-tag-manager.phtml</item>
-                    <item name="enabled_by_default" xsi:type="boolean">false</item>
-                    <item name="cookies" xsi:type="array"/>
-                </item>
-
-                <!-- Google Analytics 4 -->
-                <item name="google_analytics_4" xsi:type="array">
-                    <item name="code" xsi:type="string">google_analytics_4</item>
-                    <item name="title" xsi:type="string">Google Analytics 4</item>
-                    <item name="description" xsi:type="string">Web analytics service that tracks and reports website traffic</item>
-                    <item name="category" xsi:type="string">analytics</item>
-                    <item name="template" xsi:type="string">Pixelperfect_HyvaCookieConsent::services/google-analytics-4.phtml</item>
-                    <item name="enabled_by_default" xsi:type="boolean">false</item>
-                    <item name="cookies" xsi:type="array">
-                        <item name="_ga" xsi:type="array">
-                            <item name="name" xsi:type="string">_ga</item>
-                            <item name="duration" xsi:type="string">2 years</item>
-                            <item name="description" xsi:type="string">Distinguishes unique users</item>
-                        </item>
-                        <item name="_ga_id" xsi:type="array">
-                            <item name="name" xsi:type="string">_ga_*</item>
-                            <item name="duration" xsi:type="string">2 years</item>
-                            <item name="description" xsi:type="string">Maintains session state</item>
-                        </item>
-                    </item>
-                </item>
-
-                <!-- Facebook Pixel -->
-                <item name="facebook_pixel" xsi:type="array">
-                    <item name="code" xsi:type="string">facebook_pixel</item>
-                    <item name="title" xsi:type="string">Facebook Pixel</item>
-                    <item name="description" xsi:type="string">Tracks conversions and enables remarketing on Facebook and Instagram</item>
-                    <item name="category" xsi:type="string">marketing</item>
-                    <item name="template" xsi:type="string">Pixelperfect_HyvaCookieConsent::services/facebook-pixel.phtml</item>
-                    <item name="enabled_by_default" xsi:type="boolean">false</item>
-                    <item name="cookies" xsi:type="array">
-                        <item name="_fbp" xsi:type="array">
-                            <item name="name" xsi:type="string">_fbp</item>
-                            <item name="duration" xsi:type="string">3 months</item>
-                            <item name="description" xsi:type="string">Stores browser ID for Facebook advertising</item>
-                        </item>
-                    </item>
-                </item>
-
-                <!-- Microsoft Clarity -->
-                <item name="microsoft_clarity" xsi:type="array">
-                    <item name="code" xsi:type="string">microsoft_clarity</item>
-                    <item name="title" xsi:type="string">Microsoft Clarity</item>
-                    <item name="description" xsi:type="string">Behavioral analytics tool that captures user interactions</item>
-                    <item name="category" xsi:type="string">analytics</item>
-                    <item name="template" xsi:type="string">Pixelperfect_HyvaCookieConsent::services/microsoft-clarity.phtml</item>
-                    <item name="enabled_by_default" xsi:type="boolean">false</item>
-                    <item name="cookies" xsi:type="array">
-                        <item name="_clck" xsi:type="array">
-                            <item name="name" xsi:type="string">_clck</item>
-                            <item name="duration" xsi:type="string">1 year</item>
-                            <item name="description" xsi:type="string">Stores Clarity user ID</item>
-                        </item>
-                        <item name="_clsk" xsi:type="array">
-                            <item name="name" xsi:type="string">_clsk</item>
-                            <item name="duration" xsi:type="string">1 day</item>
-                            <item name="description" xsi:type="string">Connects pageviews into a session</item>
-                        </item>
-                    </item>
-                </item>
-
-                <!-- Hotjar -->
-                <item name="hotjar" xsi:type="array">
-                    <item name="code" xsi:type="string">hotjar</item>
-                    <item name="title" xsi:type="string">Hotjar</item>
-                    <item name="description" xsi:type="string">Heatmaps and session recordings to understand user behavior</item>
-                    <item name="category" xsi:type="string">analytics</item>
-                    <item name="template" xsi:type="string">Pixelperfect_HyvaCookieConsent::services/hotjar.phtml</item>
-                    <item name="enabled_by_default" xsi:type="boolean">false</item>
-                    <item name="cookies" xsi:type="array">
-                        <item name="_hjid" xsi:type="array">
-                            <item name="name" xsi:type="string">_hjid</item>
-                            <item name="duration" xsi:type="string">1 year</item>
-                            <item name="description" xsi:type="string">Stores unique visitor ID</item>
-                        </item>
-                        <item name="_hjSessionUser" xsi:type="array">
-                            <item name="name" xsi:type="string">_hjSessionUser_*</item>
-                            <item name="duration" xsi:type="string">1 year</item>
-                            <item name="description" xsi:type="string">Ensures data from subsequent visits are attributed to same user</item>
-                        </item>
-                    </item>
-                </item>
-
-                <!-- Matomo -->
-                <item name="matomo" xsi:type="array">
-                    <item name="code" xsi:type="string">matomo</item>
-                    <item name="title" xsi:type="string">Matomo</item>
-                    <item name="description" xsi:type="string">Privacy-focused web analytics platform</item>
-                    <item name="category" xsi:type="string">analytics</item>
-                    <item name="template" xsi:type="string">Pixelperfect_HyvaCookieConsent::services/matomo.phtml</item>
-                    <item name="enabled_by_default" xsi:type="boolean">false</item>
-                    <item name="cookies" xsi:type="array">
-                        <item name="_pk_id" xsi:type="array">
-                            <item name="name" xsi:type="string">_pk_id.*</item>
-                            <item name="duration" xsi:type="string">13 months</item>
-                            <item name="description" xsi:type="string">Stores unique visitor ID</item>
-                        </item>
-                        <item name="_pk_ses" xsi:type="array">
-                            <item name="name" xsi:type="string">_pk_ses.*</item>
-                            <item name="duration" xsi:type="string">30 minutes</item>
-                            <item name="description" xsi:type="string">Temporary session cookie</item>
-                        </item>
-                    </item>
-                </item>
-            </argument>
+            <argument name="configData" xsi:type="object">Pixelperfect\HyvaCookieConsent\Model\Config\CookieConsent\Data</argument>
         </arguments>
     </type>
 </config>
