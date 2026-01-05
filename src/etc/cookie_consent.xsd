@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+/**
+ * Cookie Consent Configuration Schema
+ *
+ * Defines the structure for cookie_consent.xml files.
+ * Services without a <template> element are informational only (necessary cookies).
+ * Services with a <template> element are blockable and require user consent.
+ */
+-->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+    <!-- Root element -->
+    <xs:element name="cookie_consent">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="categories" type="categoriesType" minOccurs="0" maxOccurs="1"/>
+                <xs:element name="services" type="servicesType" minOccurs="0" maxOccurs="1"/>
+            </xs:sequence>
+        </xs:complexType>
+        <!-- Unique constraints -->
+        <xs:unique name="uniqueCategoryCode">
+            <xs:selector xpath="categories/category"/>
+            <xs:field xpath="@code"/>
+        </xs:unique>
+        <xs:unique name="uniqueServiceCode">
+            <xs:selector xpath="services/service"/>
+            <xs:field xpath="@code"/>
+        </xs:unique>
+    </xs:element>
+
+    <!-- Categories container -->
+    <xs:complexType name="categoriesType">
+        <xs:sequence>
+            <xs:element name="category" type="categoryType" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <!-- Single category definition -->
+    <xs:complexType name="categoryType">
+        <xs:sequence>
+            <xs:element name="title" type="xs:string"/>
+            <xs:element name="description" type="xs:string"/>
+        </xs:sequence>
+        <xs:attribute name="code" type="xs:string" use="required"/>
+        <xs:attribute name="required" type="xs:boolean" default="false"/>
+        <xs:attribute name="sort_order" type="xs:integer" default="100"/>
+    </xs:complexType>
+
+    <!-- Services container -->
+    <xs:complexType name="servicesType">
+        <xs:sequence>
+            <xs:element name="service" type="serviceType" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <!-- Single service definition -->
+    <xs:complexType name="serviceType">
+        <xs:sequence>
+            <xs:element name="title" type="xs:string"/>
+            <xs:element name="description" type="xs:string"/>
+            <!-- Optional: presence of template makes service blockable -->
+            <xs:element name="template" type="xs:string" minOccurs="0"/>
+            <xs:element name="enabled_by_default" type="xs:boolean" minOccurs="0" default="false"/>
+            <xs:element name="is_tag_manager" type="xs:boolean" minOccurs="0" default="false"/>
+            <xs:element name="managed_by" type="xs:string" minOccurs="0"/>
+            <xs:element name="config_fields" type="configFieldsType" minOccurs="0"/>
+            <xs:element name="cookies" type="cookiesType" minOccurs="0"/>
+        </xs:sequence>
+        <xs:attribute name="code" type="xs:string" use="required"/>
+        <xs:attribute name="category" type="xs:string" use="required"/>
+    </xs:complexType>
+
+    <!-- Config fields container -->
+    <xs:complexType name="configFieldsType">
+        <xs:sequence>
+            <xs:element name="field" type="configFieldType" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <!-- Single config field definition -->
+    <xs:complexType name="configFieldType">
+        <xs:attribute name="code" type="xs:string" use="required"/>
+        <xs:attribute name="type" type="fieldTypeEnum" default="text"/>
+        <xs:attribute name="required" type="xs:boolean" default="false"/>
+    </xs:complexType>
+
+    <!-- Field type enumeration -->
+    <xs:simpleType name="fieldTypeEnum">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="text"/>
+            <xs:enumeration value="select"/>
+            <xs:enumeration value="boolean"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <!-- Cookies container -->
+    <xs:complexType name="cookiesType">
+        <xs:sequence>
+            <xs:element name="cookie" type="cookieType" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <!-- Single cookie definition -->
+    <xs:complexType name="cookieType">
+        <xs:sequence>
+            <xs:element name="description" type="xs:string" minOccurs="0"/>
+        </xs:sequence>
+        <xs:attribute name="name" type="xs:string" use="required"/>
+        <xs:attribute name="duration" type="xs:string" use="required"/>
+    </xs:complexType>
+</xs:schema>
