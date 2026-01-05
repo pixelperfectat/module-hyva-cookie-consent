@@ -102,4 +102,14 @@ interface ServiceInterface
      * @return bool
      */
     public function isGtmLoading(): bool;
+
+    /**
+     * Check if service has a template (blockable service)
+     *
+     * Services with templates are blockable and require user consent.
+     * Services without templates are informational only (always active).
+     *
+     * @return bool
+     */
+    public function hasTemplate(): bool;
 }

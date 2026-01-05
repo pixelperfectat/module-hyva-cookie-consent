@@ -5,11 +5,13 @@ declare(strict_types=1);
 namespace Pixelperfect\HyvaCookieConsent\Model;
 
 use Pixelperfect\HyvaCookieConsent\Api\Data\ServiceInterface;
+use Pixelperfect\HyvaCookieConsent\Model\Config\CookieConsent\Data as ConfigData;
 
 /**
- * Pool of cookie consent services
+ * Pool of cookie consent services loaded from cookie_consent.xml
  *
- * Services are configured via di.xml and instantiated using the Factory pattern
+ * Services without a template are informational only (necessary cookies).
+ * Services with a template are blockable and require user consent.
  */
 class ServicePool
 {
@@ -27,13 +29,25 @@ class ServicePool
 
     /**
      * @param ServiceFactory $serviceFactory Factory for creating Service instances
-     * @param array<string, array<string, mixed>> $services Configuration from di.xml
+     * @param ConfigData $configData XML configuration data
      */
     public function __construct(
         private readonly ServiceFactory $serviceFactory,
-        array $services = []
+        private readonly ConfigData $configData
     ) {
-        foreach ($services as $code => $data) {
+        $this->loadServices();
+    }
+
+    /**
+     * Load services from XML configuration
+     *
+     * @return void
+     */
+    private function loadServices(): void
+    {
+        $servicesConfig = $this->configData->getServices();
+
+        foreach ($servicesConfig as $code => $data) {
             $this->services[$code] = $this->serviceFactory->create([
                 'code' => $data['code'] ?? $code,
                 'title' => $data['title'] ?? '',
@@ -44,7 +58,7 @@ class ServicePool
                 'managedBy' => $data['managed_by'] ?? null,
                 'configFields' => $data['config_fields'] ?? [],
                 'cookies' => $data['cookies'] ?? [],
-                'enabledByDefault' => (bool) ($data['enabled_by_default'] ?? true)
+                'enabledByDefault' => (bool) ($data['enabled_by_default'] ?? false)
             ]);
         }
     }
@@ -61,6 +75,9 @@ class ServicePool
 
     /**
      * Get all enabled services
+     *
+     * Services without templates (necessary/informational) are always enabled.
+     * Services with templates are enabled based on admin configuration.
      *
      * Results are cached for the duration of the request to avoid
      * repeated config reads when this method is called multiple times.

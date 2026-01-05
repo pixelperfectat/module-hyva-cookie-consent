@@ -103,6 +103,11 @@ class Service implements ServiceInterface
      */
     public function isEnabled(): bool
     {
+        // Services without templates are informational only (always enabled)
+        if (!$this->hasTemplate()) {
+            return true;
+        }
+
         if ($this->isEnabledCache !== null) {
             return $this->isEnabledCache;
         }
@@ -117,6 +122,14 @@ class Service implements ServiceInterface
         }
 
         return $this->isEnabledCache;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function hasTemplate(): bool
+    {
+        return !empty($this->template);
     }
 
     /**

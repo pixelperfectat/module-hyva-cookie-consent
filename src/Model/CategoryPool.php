@@ -5,11 +5,10 @@ declare(strict_types=1);
 namespace Pixelperfect\HyvaCookieConsent\Model;
 
 use Pixelperfect\HyvaCookieConsent\Api\Data\CategoryInterface;
+use Pixelperfect\HyvaCookieConsent\Model\Config\CookieConsent\Data as ConfigData;
 
 /**
- * Pool of cookie consent categories
- *
- * Categories are configured via di.xml and instantiated using the Factory pattern
+ * Pool of cookie consent categories loaded from cookie_consent.xml
  */
 class CategoryPool
 {
@@ -27,13 +26,25 @@ class CategoryPool
 
     /**
      * @param CategoryFactory $categoryFactory Factory for creating Category instances
-     * @param array<string, array<string, mixed>> $categories Configuration from di.xml
+     * @param ConfigData $configData XML configuration data
      */
     public function __construct(
         private readonly CategoryFactory $categoryFactory,
-        array $categories = []
+        private readonly ConfigData $configData
     ) {
-        foreach ($categories as $code => $data) {
+        $this->loadCategories();
+    }
+
+    /**
+     * Load categories from XML configuration
+     *
+     * @return void
+     */
+    private function loadCategories(): void
+    {
+        $categoriesConfig = $this->configData->getCategories();
+
+        foreach ($categoriesConfig as $code => $data) {
             $this->categories[$code] = $this->categoryFactory->create([
                 'code' => $data['code'] ?? $code,
                 'title' => $data['title'] ?? '',
