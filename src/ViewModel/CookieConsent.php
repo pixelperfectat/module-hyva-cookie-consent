@@ -215,31 +215,16 @@ class CookieConsent implements ArgumentInterface
      * The getGroupByCookieName() function iterates over groups and checks
      * if the array of cookie names includes the requested cookie.
      *
+     * All cookies are now defined in cookie_consent.xml - no hardcoded values.
+     *
      * @return string JSON encoded config
      */
     public function getCookieConsentConfigJson(): string
     {
         // Build config with group as key and cookie names as keys for O(1) deduplication
-        $configByKey = [
-            'necessary' => [
-                'hyva_cookie_consent' => true,  // Critical: consent cookie must be in necessary!
-                'PHPSESSID' => true,
-                'form_key' => true,
-                'mage-cache-storage' => true,
-                'mage-cache-storage-section-invalidation' => true,
-                'mage-cache-sessid' => true,
-                'mage-messages' => true,
-            ],
-            'preferences' => [
-                'recently_viewed_product' => true,
-                'recently_viewed_product_previous' => true,
-                'recently_compared_product' => true,
-                'recently_compared_product_previous' => true,
-                'product_data_storage' => true,
-            ],
-        ];
+        $configByKey = [];
 
-        // Add cookies from enabled services to their respective categories
+        // Add cookies from all enabled services to their respective categories
         foreach ($this->servicePool->getEnabledServices() as $service) {
             $category = $service->getCategory();
             if (!isset($configByKey[$category])) {
@@ -290,6 +275,8 @@ class CookieConsent implements ArgumentInterface
      * Note: Uses ALL services (not just enabled) because cookies may be set by external
      * tag managers or other sources, and we want to clean them up regardless.
      *
+     * All cookies are now defined in cookie_consent.xml - no hardcoded values.
+     *
      * @return string JSON encoded cookie patterns by category
      */
     public function getCookiePatternsForDeletionJson(): string
@@ -309,21 +296,6 @@ class CookieConsent implements ArgumentInterface
                     $patternsByKey[$category][$cookieName] = true;
                 }
             }
-        }
-
-        // Add standard Magento cookies for preferences category
-        if (!isset($patternsByKey['preferences'])) {
-            $patternsByKey['preferences'] = [];
-        }
-        $preferenceCookies = [
-            'recently_viewed_product',
-            'recently_viewed_product_previous',
-            'recently_compared_product',
-            'recently_compared_product_previous',
-            'product_data_storage'
-        ];
-        foreach ($preferenceCookies as $cookie) {
-            $patternsByKey['preferences'][$cookie] = true;
         }
 
         // Convert from key-based to value-based arrays for JSON output
