@@ -91,6 +91,28 @@ $cookieDeletionPatterns = $consentViewModel->getCookiePatternsForDeletionJson();
                 <?php endforeach; ?>
             },
 
+            // CSP-friendly computed properties for negations
+            get hideDetails() {
+                return !this.showDetails;
+            },
+
+            get hideCookieDetails() {
+                return !this.showCookieDetails;
+            },
+
+            // CSP-friendly computed properties for toggle class bindings
+            get analyticsActiveClass() {
+                return this.consent.analytics ? 'is-active' : '';
+            },
+
+            get marketingActiveClass() {
+                return this.consent.marketing ? 'is-active' : '';
+            },
+
+            get preferencesActiveClass() {
+                return this.consent.preferences ? 'is-active' : '';
+            },
+
             init() {
                 const saved = this.getSavedConsent();
                 if (saved && saved.version === CONSENT_VERSION) {
