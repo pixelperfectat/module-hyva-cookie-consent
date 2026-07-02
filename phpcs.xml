@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<ruleset name="PixelPerfect HyvaCookieConsent">
+    <description>Uses the shared PixelPerfect standard (pixelperfectat/coding-standard).</description>
+    <config name="ignore_warnings_on_exit" value="1"/>
+
+    <file>.</file>
+    <exclude-pattern>*/Test/*</exclude-pattern>
+    <exclude-pattern>*/vendor/*</exclude-pattern>
+    <exclude-pattern>*/docs/*</exclude-pattern>
+    <exclude-pattern>*/view/*</exclude-pattern>
+    <exclude-pattern>*.sync-conflict-*</exclude-pattern>
+
+    <rule ref="PixelPerfect"/>
+</ruleset>

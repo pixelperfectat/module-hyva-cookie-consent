@@ -1,0 +1,9 @@
+includes:
+    # Shared level, bootstrap (bitexpert/phpstan-magento) and defaults.
+    - vendor/pixelperfectat/coding-standard/phpstan.neon
+
+parameters:
+    paths:
+        - src
+    excludePaths:
+        - '*.sync-conflict-*'
