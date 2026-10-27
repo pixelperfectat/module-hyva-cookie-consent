@@ -20,6 +20,8 @@ class Service implements ServiceInterface
 
     /**
      * Cached enabled state (null = not yet computed)
+     *
+     * @var bool|null
      */
     private ?bool $isEnabledCache = null;
 

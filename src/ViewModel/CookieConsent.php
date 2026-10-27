@@ -132,6 +132,7 @@ class CookieConsent implements ArgumentInterface
             self::CONFIG_PATH_PREFIX . 'text/banner_description',
             ScopeInterface::SCOPE_STORE
         );
+        // phpcs:ignore Generic.Files.LineLength.TooLong -- one phrase, so i18n:collect-phrases keeps finding it
         return $value ?: (string) __('We use cookies to enhance your browsing experience, analyze site traffic, and personalize content. By clicking "Accept All", you consent to our use of cookies.');
     }
 
