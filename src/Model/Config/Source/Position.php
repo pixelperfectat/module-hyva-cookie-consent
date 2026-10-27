@@ -14,7 +14,7 @@ class Position implements OptionSourceInterface
     /**
      * Get position options
      *
-     * @return array<int, array<string, string>>
+     * @return array<int, array{value: string, label: \Magento\Framework\Phrase}>
      */
     public function toOptionArray(): array
     {

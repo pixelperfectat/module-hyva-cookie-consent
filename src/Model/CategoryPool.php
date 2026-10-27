@@ -67,8 +67,9 @@ class CategoryPool
     {
         if ($this->sortedCategoriesCache === null) {
             $categories = $this->categories;
-            uasort($categories, static fn(CategoryInterface $a, CategoryInterface $b) =>
-                $a->getSortOrder() <=> $b->getSortOrder()
+            uasort(
+                $categories,
+                static fn(CategoryInterface $a, CategoryInterface $b) => $a->getSortOrder() <=> $b->getSortOrder()
             );
             $this->sortedCategoriesCache = $categories;
         }

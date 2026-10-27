@@ -8,6 +8,12 @@
     <preference for="Pixelperfect\HyvaCookieConsent\Api\Data\ServiceInterface"
                 type="Pixelperfect\HyvaCookieConsent\Model\Service"/>
 
+    <!-- Cookie restriction mode follows the module's enable flag instead of a global config default -->
+    <type name="Magento\Cookie\Helper\Cookie">
+        <plugin name="pixelperfect_hyva_cookie_consent_enforce_restriction"
+                type="Pixelperfect\HyvaCookieConsent\Plugin\EnforceCookieRestrictionPlugin"/>
+    </type>
+
     <!-- Cookie Consent XML Configuration Reader -->
     <type name="Pixelperfect\HyvaCookieConsent\Model\Config\CookieConsent\Reader">
         <arguments>

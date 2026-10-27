@@ -14,6 +14,7 @@ const {
     waitForPageReady,
     getBanner,
     getConsentData,
+    getConsentLoaders,
     clickFloatingButton,
     setCategoryAndSave,
 } = require('./helpers/cookie-consent.helpers');
@@ -183,14 +184,15 @@ test.describe('Partial Consent States', () => {
         await page.locator(SELECTORS.savePreferences).click();
         await page.waitForTimeout(2000);
 
-        // Check that GA cookies are set (analytics)
-        const cookies = await context.cookies();
-        const haGaCookies = cookies.some(c => c.name.startsWith('_ga'));
+        // The saved consent grants analytics only
+        const consentData = await getConsentData(context);
+        expect(consentData.categories.analytics).toBe(true);
+        expect(consentData.categories.marketing).toBe(false);
 
-        // If GA4 is configured as analytics, expect GA cookies
-        // Note: This may be skipped if GA4 is not configured
-        if (haGaCookies) {
-            expect(haGaCookies).toBe(true);
+        // Analytics loaders ran, marketing loaders did not
+        const loaders = await getConsentLoaders(page);
+        for (const loader of loaders) {
+            expect(loader.loaded).toBe(loader.category === 'analytics');
         }
 
         // fbq (Facebook) should NOT be defined (marketing is off)

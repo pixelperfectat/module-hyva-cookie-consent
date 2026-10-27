@@ -1,0 +1,17 @@
+{
+    "$schema": "vendor/infection/infection/resources/schema.json",
+    "source": {
+        "directories": [
+            "src/Model",
+            "src/Observer",
+            "src/Plugin",
+            "src/ViewModel"
+        ]
+    },
+    "logs": {
+        "text": "var/infection.log"
+    },
+    "mutators": {
+        "@default": true
+    }
+}

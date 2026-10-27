@@ -13,6 +13,9 @@ use Magento\Framework\Module\Dir\Reader as ModuleReader;
  */
 class SchemaLocator implements SchemaLocatorInterface
 {
+    /**
+     * @var string Absolute path to cookie_consent.xsd
+     */
     private string $schema;
 
     /**

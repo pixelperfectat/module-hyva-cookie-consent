@@ -34,6 +34,10 @@ $cookieDeletionPatterns = $consentViewModel->getCookiePatternsForDeletionJson();
     // Cookie patterns by category for deletion on consent revocation
     window.cookie_consent_deletion_patterns = <?= /* @noEscape */ $cookieDeletionPatterns ?>;
 
+    // Consent-gated loaders. Service templates push {category, load} entries from their own registered
+    // inline scripts, so nothing has to inject inline script code later (which a strict CSP would block).
+    window.hyvaCookieConsentLoaders = window.hyvaCookieConsentLoaders || [];
+
     // Google Consent Mode v2 - Set default BEFORE GTM loads
     // This ensures GTM/GA4 respect consent from the start
     window.dataLayer = window.dataLayer || [];
@@ -85,9 +89,9 @@ $cookieDeletionPatterns = $consentViewModel->getCookiePatternsForDeletionJson();
             consent: {
                 necessary: true,
                 <?php foreach ($categories as $category): ?>
-                <?php if (!$category->isRequired()): ?>
-                <?= $escaper->escapeJs($category->getCode()) ?>: false,
-                <?php endif; ?>
+                    <?php if (!$category->isRequired()): ?>
+                        <?= $escaper->escapeJs($category->getCode()) ?>: false,
+                    <?php endif; ?>
                 <?php endforeach; ?>
             },
 
@@ -257,7 +261,26 @@ $cookieDeletionPatterns = $consentViewModel->getCookiePatternsForDeletionJson();
                     }
                 });
 
-                // Activate inline scripts (template pattern)
+                // Run the consent-gated loaders of the consented categories, once per page
+                (window.hyvaCookieConsentLoaders || []).forEach(loader => {
+                    if (!loader || loader.loaded || typeof loader.load !== 'function') {
+                        return;
+                    }
+                    if (consentedCategories.includes(loader.category)) {
+                        loader.loaded = true;
+                        try {
+                            loader.load();
+                        } catch (error) {
+                            // Surface the error without stopping the remaining loaders
+                            setTimeout(() => {
+                                throw error;
+                            });
+                        }
+                    }
+                });
+
+                // Activate inline scripts (template pattern). Under a strict CSP the browser only runs these
+                // if the script inside the <template> carries a valid nonce or hash.
                 document.querySelectorAll('template[data-consent-category]').forEach(template => {
                     const category = template.dataset.consentCategory;
                     if (consentedCategories.includes(category)) {
@@ -303,9 +326,10 @@ $cookieDeletionPatterns = $consentViewModel->getCookiePatternsForDeletionJson();
                 paths.forEach(path => {
                     domains.forEach(domain => {
                         const domainPart = domain ? `; domain=${domain}` : '';
-                        document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=${path}${domainPart}`;
+                        const expired = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=${path}${domainPart}`;
+                        document.cookie = expired;
                         // Also try with secure flag for HTTPS sites
-                        document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=${path}${domainPart}; secure`;
+                        document.cookie = `${expired}; secure`;
                     });
                 });
             },

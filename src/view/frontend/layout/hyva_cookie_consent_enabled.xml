@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<!--
+    Added by Observer\AddEnabledLayoutHandle only while cookie consent is enabled for the store view.
+-->
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <!--
+            Remove Magento's native Google Analytics block.
+            With this module, GA is loaded via GTM (with consent-aware triggers) or the GA4 service
+            template (which waits for consent), so GA cookies are not set before consent.
+        -->
+        <referenceBlock name="google_analytics" remove="true"/>
+
+        <!--
+            Remove Magento's default cookie notice. Cookie restriction mode stays on (see
+            Plugin\EnforceCookieRestrictionPlugin) so hyva.setCookie() blocks cookies until consent,
+            and this module's banner replaces the notice.
+        -->
+        <referenceBlock name="cookie_notices" remove="true"/>
+    </body>
+</page>

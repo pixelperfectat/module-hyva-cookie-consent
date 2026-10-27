@@ -14,7 +14,7 @@ class BannerStyle implements OptionSourceInterface
     /**
      * Get banner style options
      *
-     * @return array<int, array<string, string>>
+     * @return array<int, array{value: string, label: \Magento\Framework\Phrase}>
      */
     public function toOptionArray(): array
     {

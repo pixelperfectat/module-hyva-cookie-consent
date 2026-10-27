@@ -34,14 +34,15 @@ test.describe('Cookie Deletion on Consent Revocation', () => {
         // Step 2: Accept all cookies
         await acceptAll(page);
 
-        // Step 3: Wait for GA cookies to be set (if GTM/GA4 is configured)
-        await page.waitForTimeout(3000);
+        // Step 3: Set GA-style cookies directly, so the test doesn't depend on a GA4/GTM account
+        await page.evaluate(() => {
+            document.cookie = '_ga=GA1.1.123.456; path=/';
+            document.cookie = '_ga_TESTID123=GS1.1.789; path=/';
+        });
 
         let cookies = await getAllCookies(context);
         const gaCookiesBefore = findCookiesByPattern(cookies, '_ga*');
-
-        // Log for debugging
-        console.log('GA cookies before revocation:', gaCookiesBefore.map(c => c.name));
+        expect(gaCookiesBefore.map(c => c.name).sort()).toEqual(['_ga', '_ga_TESTID123']);
 
         // Step 4: Open cookie settings and revoke analytics
         await openCookieSettings(page);
@@ -55,12 +56,7 @@ test.describe('Cookie Deletion on Consent Revocation', () => {
         cookies = await getAllCookies(context);
         const gaCookiesAfter = findCookiesByPattern(cookies, '_ga*');
 
-        console.log('GA cookies after revocation:', gaCookiesAfter.map(c => c.name));
-
-        // If GA cookies were present before, they should be deleted now
-        if (gaCookiesBefore.length > 0) {
-            expect(gaCookiesAfter.length).toBe(0);
-        }
+        expect(gaCookiesAfter.map(c => c.name)).toEqual([]);
     });
 
     test('should handle wildcard cookie patterns correctly', async ({ page, context }) => {

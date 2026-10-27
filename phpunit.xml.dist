@@ -1,11 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
+         bootstrap="Test/Unit/bootstrap.php"
          colors="true"
-         backupGlobals="false">
+         backupGlobals="false"
+         failOnRisky="true"
+         failOnWarning="true">
     <testsuites>
         <testsuite name="unit">
             <directory suffix="Test.php">Test/Unit</directory>
         </testsuite>
     </testsuites>
+    <coverage>
+        <include>
+            <directory suffix=".php">src/Model</directory>
+            <directory suffix=".php">src/Observer</directory>
+            <directory suffix=".php">src/Plugin</directory>
+            <directory suffix=".php">src/ViewModel</directory>
+        </include>
+    </coverage>
 </phpunit>

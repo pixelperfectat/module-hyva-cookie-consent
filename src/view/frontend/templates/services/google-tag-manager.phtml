@@ -76,7 +76,7 @@ $category = $service->getCategory();
     'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
     })(window,document,'script','dataLayer','<?= $escaper->escapeJs($containerId) ?>');
 </script>
-<?php $hyvaCsp->registerInlineScript() ?>
+    <?php $hyvaCsp->registerInlineScript() ?>
 
 <!-- Google Tag Manager (noscript) - Infrastructure Mode -->
 <noscript>
@@ -85,28 +85,32 @@ $category = $service->getCategory();
 </noscript>
 
 <?php else: ?>
-<!-- Google Tag Manager - Strict Mode: Block until consent -->
-<template data-consent-category="<?= $escaper->escapeHtmlAttr($category) ?>">
-    <script>
-        window.dataLayer = window.dataLayer || [];
+<!-- Google Tag Manager - Strict Mode: Runs once consent for its category is given -->
+<script>
+    (window.hyvaCookieConsentLoaders = window.hyvaCookieConsentLoaders || []).push({
+        category: '<?= $escaper->escapeJs($category) ?>',
+        load() {
+            window.dataLayer = window.dataLayer || [];
 
-        // Push consent granted event
-        window.dataLayer.push({
-            event: 'consent_granted',
-            consent_necessary: true,
-            consent_analytics: true,
-            consent_marketing: window.cookie_consent_groups?.marketing || false,
-            consent_preferences: window.cookie_consent_groups?.preferences || false
-        });
+            // Push consent granted event
+            window.dataLayer.push({
+                event: 'consent_granted',
+                consent_necessary: true,
+                consent_analytics: true,
+                consent_marketing: window.cookie_consent_groups?.marketing || false,
+                consent_preferences: window.cookie_consent_groups?.preferences || false
+            });
 
-        // GTM snippet
-        (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-        new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-        j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-        'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-        })(window,document,'script','dataLayer','<?= $escaper->escapeJs($containerId) ?>');
-    </script>
-</template>
+            // GTM snippet
+            (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+            new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+            j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+            'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+            })(window,document,'script','dataLayer','<?= $escaper->escapeJs($containerId) ?>');
+        }
+    });
+</script>
+    <?php $hyvaCsp->registerInlineScript() ?>
 
 <!-- Google Tag Manager (noscript) - Hidden until consent -->
 <template data-consent-category="<?= $escaper->escapeHtmlAttr($category) ?>">

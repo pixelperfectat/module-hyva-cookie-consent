@@ -73,23 +73,26 @@ $containerClasses = $bannerStyle === 'modal'
                         <?= $escaper->escapeHtml(__('Always Active')) ?>
                     </span>
                     <?php else: ?>
-                     <?php
+                        <?php
                         // Map category code to CSP-friendly computed property name
                         $categoryCode = $category->getCode();
                         $activeClassProperty = $categoryCode . 'ActiveClass';
-                     ?>
-                        <button
+                        ?>
+                    <button
                         type="button"
                         @click="toggleCategoryClick"
                         data-category="<?= $escaper->escapeHtmlAttr($categoryCode) ?>"
-                        class="toggle-switch relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+                        class="toggle-switch relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full
+                               transition-colors duration-200 ease-in-out
+                               focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
                         :class="<?= $escaper->escapeHtmlAttr($activeClassProperty) ?>"
                         role="switch"
                         :aria-checked="consent.<?= $escaper->escapeJs($categoryCode) ?>"
                         aria-label="<?= $escaper->escapeHtmlAttr(__('Toggle %1', __($category->getTitle()))) ?>"
                     >
                         <span
-                            class="toggle-knob pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out mt-0.5 ml-0.5"
+                            class="toggle-knob pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white
+                                   shadow ring-0 transition duration-200 ease-in-out mt-0.5 ml-0.5"
                             :class="<?= $escaper->escapeHtmlAttr($activeClassProperty) ?>"
                         ></span>
                     </button>
@@ -118,13 +121,15 @@ $containerClasses = $bannerStyle === 'modal'
                         <table class="w-full text-xs border-collapse">
                             <thead>
                                 <tr class="bg-gray-50">
-                                    <th class="text-left py-1.5 px-2 border border-gray-200 text-gray-600 font-medium w-1/4">
+                                    <th class="text-left py-1.5 px-2 border border-gray-200 text-gray-600
+                                               font-medium w-1/4">
                                         <?= $escaper->escapeHtml(__('Cookie')) ?>
                                     </th>
                                     <th class="text-left py-1.5 px-2 border border-gray-200 text-gray-600 font-medium">
                                         <?= $escaper->escapeHtml(__('Description')) ?>
                                     </th>
-                                    <th class="text-left py-1.5 px-2 border border-gray-200 text-gray-600 font-medium w-24">
+                                    <th class="text-left py-1.5 px-2 border border-gray-200 text-gray-600
+                                               font-medium w-24">
                                         <?= $escaper->escapeHtml(__('Duration')) ?>
                                     </th>
                                 </tr>
@@ -133,12 +138,15 @@ $containerClasses = $bannerStyle === 'modal'
                                 <?php foreach ($cookies as $cookie): ?>
                                 <tr>
                                     <td class="py-1.5 px-2 border border-gray-200 text-gray-700 align-top">
-                                        <code class="bg-gray-100 px-1 rounded text-xs break-all"><?= $escaper->escapeHtml($cookie['name'] ?? '') ?></code>
+                                        <code class="bg-gray-100 px-1 rounded text-xs break-all"><?=
+                                            $escaper->escapeHtml($cookie['name'] ?? '')
+                                        ?></code>
                                     </td>
                                     <td class="py-1.5 px-2 border border-gray-200 text-gray-500 align-top">
                                         <?= $escaper->escapeHtml(__($cookie['description'] ?? '')) ?>
                                     </td>
-                                    <td class="py-1.5 px-2 border border-gray-200 text-gray-400 align-top whitespace-nowrap">
+                                    <td class="py-1.5 px-2 border border-gray-200 text-gray-400 align-top
+                                               whitespace-nowrap">
                                         <?= $escaper->escapeHtml(__($cookie['duration'] ?? '')) ?>
                                     </td>
                                 </tr>
@@ -170,7 +178,8 @@ $containerClasses = $bannerStyle === 'modal'
                 type="button"
                 @click="toggleDetails"
                 data-testid="cookie-customize"
-                class="btn btn-secondary px-4 py-2 border border-gray-300 rounded text-gray-700 hover:bg-gray-100 transition-colors"
+                class="btn btn-secondary px-4 py-2 border border-gray-300 rounded text-gray-700
+                       hover:bg-gray-100 transition-colors"
             >
                 <span x-show="hideDetails"><?= $escaper->escapeHtml(__('Customize')) ?></span>
                 <span x-show="showDetails"><?= $escaper->escapeHtml(__('Back')) ?></span>
@@ -179,7 +188,8 @@ $containerClasses = $bannerStyle === 'modal'
                 type="button"
                 @click="rejectAll"
                 data-testid="cookie-reject-all"
-                class="btn btn-secondary px-4 py-2 border border-gray-300 rounded text-gray-700 hover:bg-gray-100 transition-colors"
+                class="btn btn-primary px-4 py-2 bg-primary text-white rounded
+                       hover:bg-primary-darker transition-colors"
             >
                 <?= $escaper->escapeHtml(__('Reject All')) ?>
             </button>
@@ -188,7 +198,8 @@ $containerClasses = $bannerStyle === 'modal'
                     type="button"
                     @click="savePreferences"
                     data-testid="cookie-save-preferences"
-                    class="btn btn-primary px-4 py-2 bg-primary text-white rounded hover:bg-primary-darker transition-colors"
+                    class="btn btn-primary px-4 py-2 bg-primary text-white rounded
+                           hover:bg-primary-darker transition-colors"
                 >
                     <?= $escaper->escapeHtml(__('Save Preferences')) ?>
                 </button>
@@ -198,7 +209,8 @@ $containerClasses = $bannerStyle === 'modal'
                     type="button"
                     @click="acceptAll"
                     data-testid="cookie-accept-all"
-                    class="btn btn-primary px-4 py-2 bg-primary text-white rounded hover:bg-primary-darker transition-colors"
+                    class="btn btn-primary px-4 py-2 bg-primary text-white rounded
+                           hover:bg-primary-darker transition-colors"
                 >
                     <?= $escaper->escapeHtml(__('Accept All')) ?>
                 </button>

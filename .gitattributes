@@ -1,5 +1,27 @@
 # Tell GitHub that .phtml files are PHP
 *.phtml linguist-language=PHP
-
-# Optional: exclude vendor/test files from language stats
 /Test/* linguist-vendored
+
+# Keep tests, CI and dev config out of the composer dist archive
+/Test                   export-ignore
+/tests                  export-ignore
+/.github                export-ignore
+/.gitattributes         export-ignore
+/.gitignore             export-ignore
+/phpcs.xml              export-ignore
+/phpcs.xml.dist         export-ignore
+/phpstan.neon           export-ignore
+/phpstan.neon.dist      export-ignore
+/phpstan-baseline.neon  export-ignore
+/phpunit.xml            export-ignore
+/phpunit.xml.dist       export-ignore
+/infection.json         export-ignore
+/infection.json.dist    export-ignore
+/renovate.json          export-ignore
+/playwright.config.*    export-ignore
+/package.json           export-ignore
+/package-lock.json      export-ignore
+/CLAUDE.md              export-ignore
+/.claude                export-ignore
+/AUDIT*.md              export-ignore
+/STEP2*.md              export-ignore

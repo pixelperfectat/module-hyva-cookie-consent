@@ -5,7 +5,7 @@
  * - Banner appears for new visitors
  * - Cookies are blocked until consent
  * - Accept/Reject All work correctly
- * - GTM Infrastructure Mode with Consent Mode v2
+ * - Google Consent Mode v2 default and update commands
  * - Consent persists across page loads
  * - Floating button allows re-opening settings
  *
@@ -25,7 +25,7 @@ const {
     clickFloatingButton,
     getConsentData,
     getBanner,
-    findDataLayerEvent,
+    findConsentModeCommand,
     getCookieConsentConfig,
     getCookieConsentGroups,
 } = require('./helpers/cookie-consent.helpers');
@@ -129,35 +129,54 @@ test.describe('Cookie Consent Banner', () => {
     });
 });
 
-test.describe('GTM Infrastructure Mode + Consent Mode v2', () => {
+// Google Consent Mode v2 commands are pushed in every mode. The consent_default/consent_update dataLayer
+// events only exist in GTM infrastructure mode and are covered by gtm-infrastructure.spec.js.
+test.describe('Google Consent Mode v2', () => {
     test.beforeEach(async ({ context }) => {
         await context.clearCookies();
     });
 
-    test('consent_default event fires with denied state', async ({ page }) => {
+    test('consent default is denied before any choice', async ({ page }) => {
         await page.goto('/', { waitUntil: 'networkidle' });
         await waitForPageReady(page);
 
-        const consentDefault = await findDataLayerEvent(page, 'consent_default');
+        const consentDefault = await findConsentModeCommand(page, 'default');
 
-        expect(consentDefault).toBeDefined();
-        expect(consentDefault.consent_analytics).toBe(false);
-        expect(consentDefault.consent_marketing).toBe(false);
+        expect(consentDefault).toBeTruthy();
+        expect(consentDefault.analytics_storage).toBe('denied');
+        expect(consentDefault.ad_storage).toBe('denied');
+        expect(consentDefault.ad_user_data).toBe('denied');
+        expect(consentDefault.ad_personalization).toBe('denied');
+        expect(consentDefault.security_storage).toBe('granted');
     });
 
-    test('consent_update event fires after accepting', async ({ page }) => {
+    test('consent update grants everything after accepting', async ({ page }) => {
         await page.goto('/', { waitUntil: 'networkidle' });
         await waitForPageReady(page);
 
-        // Accept all
         await clickAcceptAll(page);
         await page.waitForTimeout(1000);
 
-        const consentUpdate = await findDataLayerEvent(page, 'consent_update');
+        const consentUpdate = await findConsentModeCommand(page, 'update');
 
-        expect(consentUpdate).toBeDefined();
-        expect(consentUpdate.consent_analytics).toBe(true);
-        expect(consentUpdate.consent_marketing).toBe(true);
+        expect(consentUpdate).toBeTruthy();
+        expect(consentUpdate.analytics_storage).toBe('granted');
+        expect(consentUpdate.ad_storage).toBe('granted');
+        expect(consentUpdate.functionality_storage).toBe('granted');
+    });
+
+    test('consent update stays denied after rejecting', async ({ page }) => {
+        await page.goto('/', { waitUntil: 'networkidle' });
+        await waitForPageReady(page);
+
+        await clickRejectAll(page);
+        await page.waitForTimeout(1000);
+
+        const consentUpdate = await findConsentModeCommand(page, 'update');
+
+        expect(consentUpdate).toBeTruthy();
+        expect(consentUpdate.analytics_storage).toBe('denied');
+        expect(consentUpdate.ad_storage).toBe('denied');
     });
 });
 

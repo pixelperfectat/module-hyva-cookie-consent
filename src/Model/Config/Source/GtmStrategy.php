@@ -14,7 +14,7 @@ class GtmStrategy implements OptionSourceInterface
     /**
      * Get GTM loading strategy options
      *
-     * @return array<int, array<string, string>>
+     * @return array<int, array{value: string, label: \Magento\Framework\Phrase}>
      */
     public function toOptionArray(): array
     {

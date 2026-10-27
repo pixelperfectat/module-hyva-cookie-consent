@@ -7,8 +7,6 @@
     <exclude-pattern>*/Test/*</exclude-pattern>
     <exclude-pattern>*/vendor/*</exclude-pattern>
     <exclude-pattern>*/docs/*</exclude-pattern>
-    <exclude-pattern>*/view/*</exclude-pattern>
-    <exclude-pattern>*.sync-conflict-*</exclude-pattern>
 
     <rule ref="PixelPerfect"/>
 </ruleset>
