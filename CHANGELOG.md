@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+- Composer metadata (keywords, authors, homepage, support links) and the Magento modules the code uses: Store, Config, Backend and Theme.
+- Infection mutation testing, run by `composer check`.
+
+### Changed
+- PHP 8.2 is supported again: the constraint is now `~8.2.0 || ~8.3.0 || ~8.4.0`.
+- `magento/module-cookie` and `magento/module-csp` have version bounds instead of `*`.
+- Development tooling uses `pixelperfectat/coding-standard` 0.2, with CI through the shared `pixelperfectat/ci-templates` workflow and Renovate.
+
+## [0.3.0] - 2026-01-13
+
+### Changed
+- The banner and config templates use computed properties instead of inline expressions, so the banner works with Alpine's CSP build.
+
 ## [0.2.0] - 2026-01-05
 
 ### Added
@@ -27,7 +43,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Cookie details table alignment and formatting
 - Missing translations for cookie descriptions and durations
 
-## [0.1.0] - 2025-01-01
+## [0.1.0] - 2026-01-03
 
 ### Added
 - Initial release with GDPR/ePrivacy-compliant cookie consent management
@@ -39,3 +55,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Multi-language support (EN, DE, FR, ES, IT)
 - Modal and bar banner styles
 - Admin configuration for banner customization
+
+[Unreleased]: https://github.com/pixelperfectat/module-hyva-cookie-consent/compare/0.3.0...HEAD
+[0.3.0]: https://github.com/pixelperfectat/module-hyva-cookie-consent/compare/0.2.0...0.3.0
+[0.2.0]: https://github.com/pixelperfectat/module-hyva-cookie-consent/compare/0.1.0...0.2.0
+[0.1.0]: https://github.com/pixelperfectat/module-hyva-cookie-consent/releases/tag/0.1.0
