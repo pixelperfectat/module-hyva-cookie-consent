@@ -26,7 +26,7 @@ consent-gated tracking integrations.
 | | Version |
 |---|---|
 | Magento Open Source / Adobe Commerce | 2.4.6 – 2.4.8 (`magento/framework` 103) |
-| PHP | 8.2, 8.3 or 8.4 (as far as your Magento version supports it) |
+| PHP | 8.2, 8.3, 8.4 or 8.5 (as far as your Magento version supports it) |
 | Hyvä theme module (`hyva-themes/magento2-theme-module`) | 1.3.11 or later (1.3.11 introduced the `HyvaCsp` view model the templates use) |
 
 ## Installation
