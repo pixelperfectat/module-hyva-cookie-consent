@@ -118,7 +118,8 @@ class CookieConsent implements ArgumentInterface
             self::CONFIG_PATH_PREFIX . 'text/banner_headline',
             ScopeInterface::SCOPE_STORE
         );
-        return $value ?: (string) __('Cookie Settings');
+        // The configured text goes through translation too, so the shipped English default is localised.
+        return $value ? (string) __($value) : (string) __('Cookie Settings');
     }
 
     /**
@@ -132,8 +133,11 @@ class CookieConsent implements ArgumentInterface
             self::CONFIG_PATH_PREFIX . 'text/banner_description',
             ScopeInterface::SCOPE_STORE
         );
+        if ($value) {
+            return (string) __($value);
+        }
         // phpcs:ignore Generic.Files.LineLength.TooLong -- one phrase, so i18n:collect-phrases keeps finding it
-        return $value ?: (string) __('We use cookies to enhance your browsing experience, analyze site traffic, and personalize content. By clicking "Accept All", you consent to our use of cookies.');
+        return (string) __('We use cookies to enhance your browsing experience, analyze site traffic, and personalize content. By clicking "Accept All", you consent to our use of cookies.');
     }
 
     /**

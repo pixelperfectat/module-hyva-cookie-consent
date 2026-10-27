@@ -58,8 +58,8 @@ include the banner's classes.
 | Consent Version | `web/hyva_cookie_consent/general/consent_version` | 1 | Increase it after a policy change: visitors whose saved choice has another version see the banner again. |
 | Banner Style | `web/hyva_cookie_consent/ui/banner_style` | Modal | Modal (centred overlay) or Bar (fixed at the bottom). |
 | Floating Button Position | `web/hyva_cookie_consent/ui/floating_button_position` | Bottom Left | Bottom Left or Bottom Right. |
-| Banner Headline | `web/hyva_cookie_consent/text/banner_headline` | "Cookie Settings" | Banner title. |
-| Banner Description | `web/hyva_cookie_consent/text/banner_description` | "We use cookies to enhance…" | Banner text, followed by the privacy policy link. |
+| Banner Headline | `web/hyva_cookie_consent/text/banner_headline` | "Cookie Settings" | Banner title. The shipped default is translated to the store's locale; your own text is shown as entered. |
+| Banner Description | `web/hyva_cookie_consent/text/banner_description` | "We use cookies to enhance…" | Banner text, followed by the privacy policy link. Translated like the headline. |
 | Privacy Policy URL | `web/hyva_cookie_consent/text/privacy_policy_url` | `/privacy-policy` | Relative or absolute URL. |
 
 While the module is enabled, cookie restriction mode is always on for that store view, whatever **Web → Default Cookie
@@ -255,8 +255,6 @@ window.dispatchEvent(new CustomEvent('open-cookie-settings'));
 - **The Consent Mode default is set at the end of the body**, ahead of the bundled GTM/GA4 code but after anything
   another module or theme puts in `<head>`.
 - **The cookie table lists the consent cookie as "1 year"**, whatever Consent Cookie Lifetime says.
-- **The default banner texts are English config values**, so translations of the headline and description only apply
-  after you clear those fields or enter your own text per store view.
 - **No REST or GraphQL API**: headless storefronts are not supported.
 - **Upgrading from 0.3.0 or earlier:** those versions set Cookie Restriction Mode to Yes as a module default. If you
   saved the Web configuration page meanwhile, Magento stored that Yes; set it back yourself if you don't want it once the

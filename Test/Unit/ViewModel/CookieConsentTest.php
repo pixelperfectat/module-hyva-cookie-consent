@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Pixelperfect\HyvaCookieConsent\Test\Unit\ViewModel;
 
+use Magento\Framework\Phrase;
+use Magento\Framework\Phrase\RendererInterface;
 use Magento\Framework\Serialize\Serializer\Json;
 use PHPUnit\Framework\TestCase;
 use Pixelperfect\HyvaCookieConsent\Model\Category;
@@ -22,9 +24,44 @@ class CookieConsentTest extends TestCase
     private CategoryPool $categoryPool;
     private ServicePool $servicePool;
 
+    private ?RendererInterface $previousRenderer = null;
+
     protected function setUp(): void
     {
         $this->scopeConfig = new FakeScopeConfig();
+    }
+
+    protected function tearDown(): void
+    {
+        if ($this->previousRenderer !== null) {
+            Phrase::setRenderer($this->previousRenderer);
+        }
+    }
+
+    /**
+     * @param array<string, string> $dictionary
+     */
+    private function translateWith(array $dictionary): void
+    {
+        $this->previousRenderer = Phrase::getRenderer();
+        Phrase::setRenderer(new class ($dictionary) implements RendererInterface {
+            /**
+             * @param array<string, string> $dictionary
+             */
+            public function __construct(private readonly array $dictionary)
+            {
+            }
+
+            /**
+             * @param string[] $source
+             * @param array<int|string, mixed> $arguments
+             */
+            public function render(array $source, array $arguments): string
+            {
+                $text = (string) end($source);
+                return $this->dictionary[$text] ?? $text;
+            }
+        });
     }
 
     /**
@@ -173,6 +210,35 @@ class CookieConsentTest extends TestCase
         self::assertSame('/privacy', $viewModel->getPrivacyPolicyUrl());
         self::assertTrue($viewModel->isGtmInfrastructureMode());
         self::assertSame('GTM-XXXXXXX', $viewModel->getGtmContainerId());
+    }
+
+    public function testShippedDefaultTextIsTranslatedAndCustomTextIsKept(): void
+    {
+        $description = 'We use cookies to enhance your browsing experience, analyze site traffic, and personalize'
+            . ' content. By clicking "Accept All", you consent to our use of cookies.';
+        $this->translateWith([
+            'Cookie Settings' => 'Cookie-Einstellungen',
+            $description => 'Wir verwenden Cookies.',
+        ]);
+
+        $this->scopeConfig->set('web/hyva_cookie_consent/text/banner_headline', 'Cookie Settings');
+        $this->scopeConfig->set('web/hyva_cookie_consent/text/banner_description', $description);
+        $viewModel = $this->viewModel();
+        self::assertSame('Cookie-Einstellungen', $viewModel->getBannerHeadline());
+        self::assertSame('Wir verwenden Cookies.', $viewModel->getBannerDescription());
+
+        $this->scopeConfig->set('web/hyva_cookie_consent/text/banner_headline', 'Unsere Cookies');
+        $this->scopeConfig->set('web/hyva_cookie_consent/text/banner_description', 'Wir fragen zuerst.');
+        $viewModel = $this->viewModel();
+        self::assertSame('Unsere Cookies', $viewModel->getBannerHeadline());
+        self::assertSame('Wir fragen zuerst.', $viewModel->getBannerDescription());
+    }
+
+    public function testFallbackTextIsTranslated(): void
+    {
+        $this->translateWith(['Cookie Settings' => 'Cookie-Einstellungen']);
+
+        self::assertSame('Cookie-Einstellungen', $this->viewModel()->getBannerHeadline());
     }
 
     public function testOnlyTheInfrastructureStrategyCountsAsInfrastructureMode(): void

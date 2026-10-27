@@ -26,6 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Installing the module changed the shop even while "Enable Cookie Consent" was off: it forced Magento's cookie restriction mode on and removed the native cookie notice and Google Analytics blocks, so a disabled module left Hyvä blocking cookies with no banner. All three now apply only while the module is enabled. Restriction mode comes from a plugin on `Magento\Cookie\Helper\Cookie` instead of a `config.xml` default, and the block removals live in the `hyva_cookie_consent_enabled` layout handle.
 - Google Tag Manager (strict mode), Google Analytics 4, Facebook Pixel, Microsoft Clarity, Hotjar and Matomo were blocked by a strict Content Security Policy after consent. Their code now registers with `HyvaCsp` and runs from a consent-gated loader (`window.hyvaCookieConsentLoaders`) instead of being cloned out of a `<template>`.
+- The banner headline and description stayed English on non-English store views: the English defaults in `config.xml` always counted as configured text, so the translated fallback never ran. Configured text now goes through translation, so the shipped default is localised and custom text is shown unchanged.
 - The `cookie_consent.xml` example in the README didn't validate against the schema.
 - Playwright specs expected GTM in the marketing category (it is in analytics) and contained assertions that could never fail.
 
