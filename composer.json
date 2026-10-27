@@ -1,14 +1,37 @@
 {
     "name": "pixelperfectat/module-hyva-cookie-consent",
-    "description": "GDPR/ePrivacy-compliant cookie consent management for Hyva theme",
+    "description": "GDPR/ePrivacy cookie consent banner for the Magento 2 Hyvä theme, with Google Consent Mode v2 and consent-gated tracking integrations",
     "license": "MIT",
     "type": "magento2-module",
+    "keywords": [
+        "magento2",
+        "magento2-module",
+        "hyva",
+        "cookie-consent",
+        "gdpr",
+        "consent-mode"
+    ],
+    "authors": [
+        {
+            "name": "Pixelperfect",
+            "homepage": "https://github.com/pixelperfectat"
+        }
+    ],
+    "homepage": "https://github.com/pixelperfectat/module-hyva-cookie-consent",
+    "support": {
+        "issues": "https://github.com/pixelperfectat/module-hyva-cookie-consent/issues",
+        "source": "https://github.com/pixelperfectat/module-hyva-cookie-consent"
+    },
     "require": {
         "php": "^8.3",
         "hyva-themes/magento2-theme-module": "^1.0",
         "magento/framework": "^103.0",
-        "magento/module-cookie": "*",
-        "magento/module-csp": "*"
+        "magento/module-backend": "^102.0",
+        "magento/module-config": "^101.2",
+        "magento/module-cookie": "^100.4",
+        "magento/module-csp": "^100.4",
+        "magento/module-store": "^101.1",
+        "magento/module-theme": "^101.1"
     },
     "require-dev": {
         "infection/infection": "^0.35",
@@ -33,8 +56,6 @@
             "url": "https://github.com/hyva-themes/magento2-compat-module-fallback"
         }
     ],
-    "minimum-stability": "dev",
-    "prefer-stable": true,
     "autoload": {
         "psr-4": {
             "Pixelperfect\\HyvaCookieConsent\\": "src/"
