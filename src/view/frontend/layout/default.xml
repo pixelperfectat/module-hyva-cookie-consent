@@ -53,7 +53,9 @@
                    ifconfig="hyva_cookie_consent/services/google_tag_manager/enabled"
                    after="hyva.cookie.consent.floating.button">
                 <arguments>
-                    <argument name="view_model" xsi:type="object">Pixelperfect\HyvaCookieConsent\ViewModel\CookieConsent</argument>
+                    <argument name="view_model" xsi:type="object">
+                        Pixelperfect\HyvaCookieConsent\ViewModel\CookieConsent
+                    </argument>
                 </arguments>
             </block>
 
@@ -63,7 +65,9 @@
                    ifconfig="hyva_cookie_consent/services/google_analytics_4/enabled"
                    after="hyva.cookie.consent.service.gtm">
                 <arguments>
-                    <argument name="view_model" xsi:type="object">Pixelperfect\HyvaCookieConsent\ViewModel\CookieConsent</argument>
+                    <argument name="view_model" xsi:type="object">
+                        Pixelperfect\HyvaCookieConsent\ViewModel\CookieConsent
+                    </argument>
                 </arguments>
             </block>
 
@@ -73,7 +77,9 @@
                    ifconfig="hyva_cookie_consent/services/facebook_pixel/enabled"
                    after="hyva.cookie.consent.service.ga4">
                 <arguments>
-                    <argument name="view_model" xsi:type="object">Pixelperfect\HyvaCookieConsent\ViewModel\CookieConsent</argument>
+                    <argument name="view_model" xsi:type="object">
+                        Pixelperfect\HyvaCookieConsent\ViewModel\CookieConsent
+                    </argument>
                 </arguments>
             </block>
 
@@ -83,7 +89,9 @@
                    ifconfig="hyva_cookie_consent/services/microsoft_clarity/enabled"
                    after="hyva.cookie.consent.service.fb">
                 <arguments>
-                    <argument name="view_model" xsi:type="object">Pixelperfect\HyvaCookieConsent\ViewModel\CookieConsent</argument>
+                    <argument name="view_model" xsi:type="object">
+                        Pixelperfect\HyvaCookieConsent\ViewModel\CookieConsent
+                    </argument>
                 </arguments>
             </block>
 
@@ -93,7 +101,9 @@
                    ifconfig="hyva_cookie_consent/services/hotjar/enabled"
                    after="hyva.cookie.consent.service.clarity">
                 <arguments>
-                    <argument name="view_model" xsi:type="object">Pixelperfect\HyvaCookieConsent\ViewModel\CookieConsent</argument>
+                    <argument name="view_model" xsi:type="object">
+                        Pixelperfect\HyvaCookieConsent\ViewModel\CookieConsent
+                    </argument>
                 </arguments>
             </block>
 
@@ -103,7 +113,9 @@
                    ifconfig="hyva_cookie_consent/services/matomo/enabled"
                    after="hyva.cookie.consent.service.hotjar">
                 <arguments>
-                    <argument name="view_model" xsi:type="object">Pixelperfect\HyvaCookieConsent\ViewModel\CookieConsent</argument>
+                    <argument name="view_model" xsi:type="object">
+                        Pixelperfect\HyvaCookieConsent\ViewModel\CookieConsent
+                    </argument>
                 </arguments>
             </block>
         </referenceContainer>

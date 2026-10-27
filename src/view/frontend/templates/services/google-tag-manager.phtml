@@ -76,7 +76,7 @@ $category = $service->getCategory();
     'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
     })(window,document,'script','dataLayer','<?= $escaper->escapeJs($containerId) ?>');
 </script>
-<?php $hyvaCsp->registerInlineScript() ?>
+    <?php $hyvaCsp->registerInlineScript() ?>
 
 <!-- Google Tag Manager (noscript) - Infrastructure Mode -->
 <noscript>

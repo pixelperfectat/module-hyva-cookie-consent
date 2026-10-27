@@ -85,9 +85,9 @@ $cookieDeletionPatterns = $consentViewModel->getCookiePatternsForDeletionJson();
             consent: {
                 necessary: true,
                 <?php foreach ($categories as $category): ?>
-                <?php if (!$category->isRequired()): ?>
-                <?= $escaper->escapeJs($category->getCode()) ?>: false,
-                <?php endif; ?>
+                    <?php if (!$category->isRequired()): ?>
+                        <?= $escaper->escapeJs($category->getCode()) ?>: false,
+                    <?php endif; ?>
                 <?php endforeach; ?>
             },
 
@@ -303,9 +303,10 @@ $cookieDeletionPatterns = $consentViewModel->getCookiePatternsForDeletionJson();
                 paths.forEach(path => {
                     domains.forEach(domain => {
                         const domainPart = domain ? `; domain=${domain}` : '';
-                        document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=${path}${domainPart}`;
+                        const expired = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=${path}${domainPart}`;
+                        document.cookie = expired;
                         // Also try with secure flag for HTTPS sites
-                        document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=${path}${domainPart}; secure`;
+                        document.cookie = `${expired}; secure`;
                     });
                 });
             },
