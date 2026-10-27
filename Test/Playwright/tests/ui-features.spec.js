@@ -67,39 +67,35 @@ test.describe('Cookie Details Table', () => {
         await context.clearCookies();
     });
 
-    test('cookie details table has proper headers', async ({ page }) => {
+    /**
+     * Open the customize view and expand the cookie details.
+     * The necessary category always lists Magento's own cookies, so a table must exist.
+     */
+    async function openCookieDetails(page) {
         await page.goto('/', { waitUntil: 'networkidle' });
         await waitForPageReady(page);
 
         const banner = getBanner(page);
         await expect(banner).toBeVisible();
 
-        // Open customize view
         await page.locator(SELECTORS.customize).click();
-        await page.waitForTimeout(500);
+        const showDetailsButton = banner.locator(SELECTORS.showDetails);
+        await expect(showDetailsButton).toBeVisible();
+        await showDetailsButton.click();
 
-        // Click "Show cookie details" button
-        const showDetailsButton = banner.locator('button:has-text("Cookie-Details anzeigen"), button:has-text("Show cookie details")');
-        if (await showDetailsButton.count() > 0) {
-            await showDetailsButton.click();
-            await page.waitForTimeout(500);
-        }
+        return banner;
+    }
 
-        // Check for table headers
-        const table = banner.locator('table').first();
-        if (await table.count() > 0) {
-            const headerRow = table.locator('thead tr');
-            await expect(headerRow).toBeVisible();
+    test('cookie details table has proper headers', async ({ page }) => {
+        const banner = await openCookieDetails(page);
 
-            // Verify table has Cookie, Description, Duration headers (or German equivalents)
-            const headerText = await headerRow.textContent();
-            const hasCookieHeader = headerText.includes('Cookie');
-            const hasDescriptionHeader = headerText.includes('Description') || headerText.includes('Beschreibung');
-            const hasDurationHeader = headerText.includes('Duration') || headerText.includes('Dauer');
+        const headerRow = banner.locator('table').first().locator('thead tr');
+        await expect(headerRow).toBeVisible();
 
-            expect(hasCookieHeader).toBe(true);
-            expect(hasDescriptionHeader || hasDurationHeader).toBe(true);
-        }
+        // Cookie, Description, Duration (or their translations)
+        const headers = headerRow.locator('th');
+        await expect(headers).toHaveCount(3);
+        await expect(headers.first()).toContainText('Cookie');
     });
 
     test('cookie details expand and collapse correctly', async ({ page }) => {
@@ -108,134 +104,56 @@ test.describe('Cookie Details Table', () => {
 
         const banner = getBanner(page);
         await expect(banner).toBeVisible();
-
-        // Open customize view
         await page.locator(SELECTORS.customize).click();
-        await page.waitForTimeout(500);
 
-        // Find the show/hide cookie details button
-        const toggleButton = banner.locator('button:has-text("Cookie-Details"), button:has-text("cookie details")');
+        const toggleButton = banner.locator(SELECTORS.showDetails);
+        const firstTable = banner.locator('table').first();
+        await expect(toggleButton).toBeVisible();
+        await expect(firstTable).toBeHidden();
 
-        if (await toggleButton.count() > 0) {
-            // Initially hidden
-            const detailsSection = banner.locator('table').first();
-            const initiallyVisible = await detailsSection.isVisible().catch(() => false);
+        await toggleButton.click();
+        await expect(firstTable).toBeVisible();
 
-            // Click to show
-            await toggleButton.click();
-            await page.waitForTimeout(500);
-
-            // Check button text changed (indicates toggle worked)
-            const buttonText = await toggleButton.textContent();
-            const isShowingHide = buttonText.includes('Hide') || buttonText.includes('Ausblenden') || buttonText.includes('ausblenden');
-
-            // Either the details are now visible, or the button text changed
-            const nowVisible = await detailsSection.isVisible().catch(() => false);
-            expect(nowVisible || isShowingHide).toBe(true);
-        }
+        await toggleButton.click();
+        await expect(firstTable).toBeHidden();
     });
 
     test('cookie table displays cookie name, description, and duration', async ({ page }) => {
-        await page.goto('/', { waitUntil: 'networkidle' });
-        await waitForPageReady(page);
+        const banner = await openCookieDetails(page);
 
-        const banner = getBanner(page);
-        await expect(banner).toBeVisible();
+        const firstRow = banner.locator('table').first().locator('tbody tr').first();
+        await expect(firstRow).toBeVisible();
 
-        // Open customize view and show cookie details
-        await page.locator(SELECTORS.customize).click();
-        await page.waitForTimeout(500);
-
-        const showDetailsButton = banner.locator('button:has-text("Cookie-Details anzeigen"), button:has-text("Show cookie details")');
-        if (await showDetailsButton.count() > 0) {
-            await showDetailsButton.click();
-            await page.waitForTimeout(500);
-        }
-
-        // Check for cookie data in table
-        const table = banner.locator('table').first();
-        if (await table.count() > 0) {
-            const rows = table.locator('tbody tr');
-            const rowCount = await rows.count();
-
-            if (rowCount > 0) {
-                const firstRow = rows.first();
-                const cells = firstRow.locator('td');
-                const cellCount = await cells.count();
-
-                // Should have 3 columns: name, description, duration
-                expect(cellCount).toBe(3);
-
-                // First cell should contain a code element with cookie name
-                const codeElement = cells.first().locator('code');
-                await expect(codeElement).toBeVisible();
-            }
-        }
+        // Three columns: name, description, duration; the name sits in a <code> element
+        await expect(firstRow.locator('td')).toHaveCount(3);
+        await expect(firstRow.locator('td').first().locator('code')).toBeVisible();
     });
 });
 
 test.describe('Service Managed By Display', () => {
+    // No shipped service sets <managed_by>. Set TEST_MANAGED_BY_SERVICE to the title of a service that does
+    // (added through another module's cookie_consent.xml) to run this check.
+    const managedByService = process.env.TEST_MANAGED_BY_SERVICE;
+    test.skip(!managedByService, 'TEST_MANAGED_BY_SERVICE not configured - skipping');
+
     test.beforeEach(async ({ context }) => {
         await context.clearCookies();
     });
 
-    test('services with managed_by show indicator text', async ({ page }) => {
+    test('managed_by indicator appears next to the service title', async ({ page }) => {
         await page.goto('/', { waitUntil: 'networkidle' });
         await waitForPageReady(page);
 
         const banner = getBanner(page);
         await expect(banner).toBeVisible();
-
-        // Open customize view
         await page.locator(SELECTORS.customize).click();
-        await page.waitForTimeout(500);
+        await banner.locator(SELECTORS.showDetails).click();
 
-        // Show cookie details
-        const showDetailsButton = banner.locator('button:has-text("Cookie-Details anzeigen"), button:has-text("Show cookie details")');
-        if (await showDetailsButton.count() > 0) {
-            await showDetailsButton.click();
-            await page.waitForTimeout(500);
-        }
+        const title = banner.locator('div.font-medium', { hasText: managedByService }).first();
+        await expect(title).toBeVisible();
 
-        // Look for "via" text which indicates managed_by relationship
-        // German: "über GTM" or English: "via GTM"
-        const managedByIndicator = banner.locator('text=/via|über|tramite|mediante/i');
-
-        // If GA4 is configured with managed_by="GTM", we should see this
-        const indicatorCount = await managedByIndicator.count();
-
-        // This test passes if either:
-        // 1. There are managed_by indicators visible
-        // 2. No services are configured with managed_by (which is also valid)
-        expect(indicatorCount).toBeGreaterThanOrEqual(0);
-    });
-
-    test('managed_by indicator appears next to service title', async ({ page }) => {
-        await page.goto('/', { waitUntil: 'networkidle' });
-        await waitForPageReady(page);
-
-        const banner = getBanner(page);
-        await expect(banner).toBeVisible();
-
-        // Open customize view and show details
-        await page.locator(SELECTORS.customize).click();
-        await page.waitForTimeout(500);
-
-        const showDetailsButton = banner.locator('button:has-text("Cookie-Details anzeigen"), button:has-text("Show cookie details")');
-        if (await showDetailsButton.count() > 0) {
-            await showDetailsButton.click();
-            await page.waitForTimeout(500);
-        }
-
-        // Check structure: service title should be followed by managed_by indicator in parentheses
-        const serviceWithManagedBy = banner.locator('.font-medium + span:has-text("via"), .font-medium + span:has-text("über")');
-
-        // If we find any, verify they're styled correctly (text-xs text-gray-400)
-        if (await serviceWithManagedBy.count() > 0) {
-            const hasCorrectStyle = await serviceWithManagedBy.first().evaluate(el => {
-                return el.classList.contains('text-xs') || el.classList.contains('text-gray-400');
-            });
-            expect(hasCorrectStyle).toBe(true);
-        }
+        const indicator = title.locator('span.text-xs');
+        await expect(indicator).toBeVisible();
+        await expect(indicator).toHaveText(/\(.+\)/);
     });
 });

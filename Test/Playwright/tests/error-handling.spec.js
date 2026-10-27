@@ -200,13 +200,12 @@ test.describe('Error Handling', () => {
             window.cookie_consent_config = null;
         });
 
-        // Banner should still be functional
+        // Banner should still be functional (a fresh context has no consent cookie, so it is shown)
         const banner = getBanner(page);
-        if (await banner.isVisible()) {
-            await clickAcceptAll(page);
-            await page.waitForTimeout(1000);
-            await expect(banner).not.toBeVisible();
-        }
+        await expect(banner).toBeVisible();
+        await clickAcceptAll(page);
+        await page.waitForTimeout(1000);
+        await expect(banner).not.toBeVisible();
     });
 
     test('page works when cookie_consent_groups is corrupted', async ({ page }) => {

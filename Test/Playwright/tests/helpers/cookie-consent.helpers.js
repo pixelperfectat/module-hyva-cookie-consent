@@ -225,6 +225,53 @@ async function findDataLayerEvent(page, eventName) {
 }
 
 /**
+ * Encode a value the way Magento's Escaper::escapeJs() writes it into a template
+ * (every character except a-z, 0-9, comma, dot and underscore becomes \uXXXX).
+ * Use it to look for config values (IDs, URLs) in loader source code.
+ * @param {string} value
+ * @returns {string}
+ */
+function escapeJsLikeMagento(value) {
+    return String(value).replace(/[^a-z0-9,._]/gi, chr =>
+        '\\u' + chr.charCodeAt(0).toString(16).toUpperCase().padStart(4, '0')
+    );
+}
+
+/**
+ * Get the consent-gated loaders that service templates registered, optionally for one category.
+ * Each entry reports whether it ran and the source of its load() function.
+ * @param {import('@playwright/test').Page} page
+ * @param {string} [category]
+ * @returns {Promise<Array<{category: string, loaded: boolean, source: string}>>}
+ */
+async function getConsentLoaders(page, category) {
+    return await page.evaluate((wanted) => {
+        return (window.hyvaCookieConsentLoaders || [])
+            .filter(loader => !wanted || loader.category === wanted)
+            .map(loader => ({
+                category: loader.category,
+                loaded: loader.loaded === true,
+                source: String(loader.load),
+            }));
+    }, category);
+}
+
+/**
+ * Find a Google Consent Mode command ("default" or "update") in dataLayer
+ * @param {import('@playwright/test').Page} page
+ * @param {'default'|'update'} command
+ * @returns {Promise<object|undefined>} The consent state of the last matching command
+ */
+async function findConsentModeCommand(page, command) {
+    return await page.evaluate((wanted) => {
+        const matches = (window.dataLayer || [])
+            .map(entry => Array.from(entry))
+            .filter(args => args[0] === 'consent' && args[1] === wanted);
+        return matches.length ? matches[matches.length - 1][2] : undefined;
+    }, command);
+}
+
+/**
  * Get cookie_consent_config from window
  * @param {import('@playwright/test').Page} page
  * @returns {Promise<object>}
@@ -271,6 +318,9 @@ module.exports = {
     getBanner,
     getDataLayer,
     findDataLayerEvent,
+    getConsentLoaders,
+    findConsentModeCommand,
+    escapeJsLikeMagento,
     getCookieConsentConfig,
     getCookieConsentGroups,
     clickFloatingButton,

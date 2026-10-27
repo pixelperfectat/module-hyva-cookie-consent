@@ -2,6 +2,8 @@
  * Service Template Tests
  *
  * Tests that verify each service template renders correctly and respects consent.
+ * Service code is registered as a consent loader (window.hyvaCookieConsentLoaders) and runs once
+ * the visitor consents to the service's category.
  * Tests are SKIPPED if the corresponding service ID is not configured in .env
  *
  * Run with: npm test -- service-templates.spec.js
@@ -14,7 +16,27 @@ const {
     rejectAll,
     setCategoryAndSave,
     getBanner,
+    getConsentLoaders,
+    escapeJsLikeMagento,
 } = require('./helpers/cookie-consent.helpers');
+
+/**
+ * Concatenated load() sources of the loaders registered for a category
+ */
+async function loaderSource(page, category) {
+    const loaders = await getConsentLoaders(page, category);
+    return loaders.map(loader => loader.source).join('\n');
+}
+
+/**
+ * Concatenated innerHTML of the consent templates (now only <noscript> fallbacks) for a category
+ */
+async function templateContent(page, category) {
+    return await page.evaluate((wanted) => {
+        const templates = document.querySelectorAll(`template[data-consent-category="${wanted}"]`);
+        return Array.from(templates).map(t => t.innerHTML).join('');
+    }, category);
+}
 
 // Service IDs from environment
 const ga4Id = process.env.TEST_GA4_MEASUREMENT_ID;
@@ -44,31 +66,36 @@ test.describe('Google Analytics 4', () => {
         );
         await expect(scriptLoader).toBeAttached();
 
-        // Check inline config template exists
-        const templates = page.locator('template[data-consent-category="analytics"]');
-        const count = await templates.count();
-        expect(count).toBeGreaterThan(0);
+        // Inline config waits in an analytics loader
+        expect(await loaderSource(page, 'analytics')).toContain(`gtag('config', '${escapeJsLikeMagento(ga4Id)}'`);
     });
 
-    test('gtag not defined before consent', async ({ page }) => {
+    // window.gtag always exists: cookie-config defines it for the Consent Mode default.
+    // What consent gates is gtag.js itself and the config command.
+    test('gtag.js not loaded before consent', async ({ page }) => {
         await page.goto('/', { waitUntil: 'networkidle' });
         await waitForPageReady(page);
 
-        const gtagExists = await page.evaluate(() => typeof window.gtag === 'function');
-        expect(gtagExists).toBe(false);
+        await expect(page.locator('script[src*="googletagmanager.com/gtag/js"]')).not.toBeAttached();
+        const configured = await page.evaluate(
+            (id) => (window.dataLayer || []).some(e => e[0] === 'config' && e[1] === id),
+            ga4Id
+        );
+        expect(configured).toBe(false);
     });
 
-    test('gtag defined after analytics consent', async ({ page }) => {
+    test('gtag.js loaded and configured after analytics consent', async ({ page }) => {
         await page.goto('/', { waitUntil: 'networkidle' });
         await waitForPageReady(page);
 
-        // Grant only analytics consent
         await setCategoryAndSave(page, 'analytics', true);
-        await page.waitForTimeout(2000);
 
-        // gtag should now be defined
-        const gtagExists = await page.evaluate(() => typeof window.gtag === 'function');
-        expect(gtagExists).toBe(true);
+        await expect(page.locator(`script[src*="googletagmanager.com/gtag/js?id=${ga4Id}"]`)).toBeAttached();
+        const configured = await page.evaluate(
+            (id) => (window.dataLayer || []).some(e => e[0] === 'config' && e[1] === id),
+            ga4Id
+        );
+        expect(configured).toBe(true);
     });
 
     test('measurement ID appears in script src', async ({ page }) => {
@@ -93,21 +120,13 @@ test.describe('Facebook Pixel', () => {
         await context.clearCookies();
     });
 
-    test('template renders with marketing category', async ({ page }) => {
+    test('code waits in a marketing loader', async ({ page }) => {
         await page.goto('/', { waitUntil: 'networkidle' });
         await waitForPageReady(page);
 
-        // Facebook Pixel should be in a marketing template
-        const fbTemplate = page.locator('template[data-consent-category="marketing"]');
-        const count = await fbTemplate.count();
-        expect(count).toBeGreaterThan(0);
-
-        // Check template contains fbq initialization
-        const templateContent = await page.evaluate(() => {
-            const templates = document.querySelectorAll('template[data-consent-category="marketing"]');
-            return Array.from(templates).map(t => t.innerHTML).join('');
-        });
-        expect(templateContent).toContain('fbq');
+        // Facebook Pixel code waits in a marketing loader, its noscript pixel in a marketing template
+        expect(await loaderSource(page, 'marketing')).toContain('fbq');
+        expect(await templateContent(page, 'marketing')).toContain('facebook.com/tr');
     });
 
     test('fbq not defined before consent', async ({ page }) => {
@@ -131,15 +150,11 @@ test.describe('Facebook Pixel', () => {
         expect(fbqExists).toBe(true);
     });
 
-    test('pixel ID appears in template', async ({ page }) => {
+    test('pixel ID appears in the loader', async ({ page }) => {
         await page.goto('/', { waitUntil: 'networkidle' });
         await waitForPageReady(page);
 
-        const templateContent = await page.evaluate(() => {
-            const templates = document.querySelectorAll('template[data-consent-category="marketing"]');
-            return Array.from(templates).map(t => t.innerHTML).join('');
-        });
-        expect(templateContent).toContain(fbPixelId);
+        expect(await loaderSource(page, 'marketing')).toContain(escapeJsLikeMagento(fbPixelId));
     });
 });
 
@@ -153,16 +168,13 @@ test.describe('Hotjar', () => {
         await context.clearCookies();
     });
 
-    test('template renders with analytics category', async ({ page }) => {
+    test('code waits in an analytics loader', async ({ page }) => {
         await page.goto('/', { waitUntil: 'networkidle' });
         await waitForPageReady(page);
 
-        // Check template contains Hotjar initialization
-        const templateContent = await page.evaluate(() => {
-            const templates = document.querySelectorAll('template[data-consent-category="analytics"]');
-            return Array.from(templates).map(t => t.innerHTML).join('');
-        });
-        expect(templateContent).toContain('hotjar');
+        // Hotjar code waits in an analytics loader
+        const source = await loaderSource(page, 'analytics');
+        expect(source).toContain('hotjar');
     });
 
     test('hj not defined before consent', async ({ page }) => {
@@ -186,15 +198,12 @@ test.describe('Hotjar', () => {
         expect(hjExists).toBe(true);
     });
 
-    test('site ID appears in template', async ({ page }) => {
+    test('site ID appears in the loader', async ({ page }) => {
         await page.goto('/', { waitUntil: 'networkidle' });
         await waitForPageReady(page);
 
-        const templateContent = await page.evaluate(() => {
-            const templates = document.querySelectorAll('template[data-consent-category="analytics"]');
-            return Array.from(templates).map(t => t.innerHTML).join('');
-        });
-        expect(templateContent).toContain(hotjarId);
+        const source = await loaderSource(page, 'analytics');
+        expect(source).toContain(hotjarId);
     });
 });
 
@@ -208,16 +217,13 @@ test.describe('Microsoft Clarity', () => {
         await context.clearCookies();
     });
 
-    test('template renders with analytics category', async ({ page }) => {
+    test('code waits in an analytics loader', async ({ page }) => {
         await page.goto('/', { waitUntil: 'networkidle' });
         await waitForPageReady(page);
 
-        // Check template contains Clarity initialization
-        const templateContent = await page.evaluate(() => {
-            const templates = document.querySelectorAll('template[data-consent-category="analytics"]');
-            return Array.from(templates).map(t => t.innerHTML).join('');
-        });
-        expect(templateContent).toContain('clarity');
+        // Clarity code waits in an analytics loader
+        const source = await loaderSource(page, 'analytics');
+        expect(source).toContain('clarity');
     });
 
     test('clarity not defined before consent', async ({ page }) => {
@@ -241,15 +247,12 @@ test.describe('Microsoft Clarity', () => {
         expect(clarityExists).toBe(true);
     });
 
-    test('project ID appears in template', async ({ page }) => {
+    test('project ID appears in the loader', async ({ page }) => {
         await page.goto('/', { waitUntil: 'networkidle' });
         await waitForPageReady(page);
 
-        const templateContent = await page.evaluate(() => {
-            const templates = document.querySelectorAll('template[data-consent-category="analytics"]');
-            return Array.from(templates).map(t => t.innerHTML).join('');
-        });
-        expect(templateContent).toContain(clarityId);
+        const source = await loaderSource(page, 'analytics');
+        expect(source).toContain(escapeJsLikeMagento(clarityId));
     });
 });
 
@@ -263,16 +266,13 @@ test.describe('Matomo', () => {
         await context.clearCookies();
     });
 
-    test('template renders with analytics category', async ({ page }) => {
+    test('code waits in an analytics loader', async ({ page }) => {
         await page.goto('/', { waitUntil: 'networkidle' });
         await waitForPageReady(page);
 
-        // Check template contains Matomo initialization (_paq)
-        const templateContent = await page.evaluate(() => {
-            const templates = document.querySelectorAll('template[data-consent-category="analytics"]');
-            return Array.from(templates).map(t => t.innerHTML).join('');
-        });
-        expect(templateContent).toContain('_paq');
+        // Matomo code (_paq) waits in an analytics loader
+        const source = await loaderSource(page, 'analytics');
+        expect(source).toContain('_paq');
     });
 
     test('_paq not tracking before consent', async ({ page }) => {
@@ -286,29 +286,23 @@ test.describe('Matomo', () => {
         expect(matomoLoaded).toBe(false);
     });
 
-    test('tracker URL appears in template', async ({ page }) => {
+    test('tracker URL appears in the loader', async ({ page }) => {
         await page.goto('/', { waitUntil: 'networkidle' });
         await waitForPageReady(page);
 
-        const templateContent = await page.evaluate(() => {
-            const templates = document.querySelectorAll('template[data-consent-category="analytics"]');
-            return Array.from(templates).map(t => t.innerHTML).join('');
-        });
+        const source = await loaderSource(page, 'analytics');
 
-        // URL should appear (possibly without trailing slash)
-        const normalizedUrl = matomoUrl.replace(/\/$/, '');
-        expect(templateContent).toContain(normalizedUrl);
+        // The template appends a trailing slash and escapes the URL for JavaScript
+        const normalizedUrl = matomoUrl.replace(/\/$/, '') + '/';
+        expect(source).toContain(escapeJsLikeMagento(normalizedUrl));
     });
 
-    test('site ID appears in template', async ({ page }) => {
+    test('site ID appears in the loader', async ({ page }) => {
         await page.goto('/', { waitUntil: 'networkidle' });
         await waitForPageReady(page);
 
-        const templateContent = await page.evaluate(() => {
-            const templates = document.querySelectorAll('template[data-consent-category="analytics"]');
-            return Array.from(templates).map(t => t.innerHTML).join('');
-        });
-        expect(templateContent).toContain(matomoSiteId);
+        const source = await loaderSource(page, 'analytics');
+        expect(source).toContain(escapeJsLikeMagento(matomoSiteId));
     });
 });
 
@@ -324,12 +318,16 @@ test.describe('Template Consent Attributes', () => {
         await page.goto('/', { waitUntil: 'networkidle' });
         await waitForPageReady(page);
 
-        // Get all consent templates
+        // Categories of consent templates, blocked scripts and registered loaders
         const categories = await page.evaluate(() => {
             const templates = document.querySelectorAll('template[data-consent-category]');
             const scripts = document.querySelectorAll('script[data-consent-category]');
             const elements = [...templates, ...scripts];
-            return elements.map(el => el.getAttribute('data-consent-category'));
+            const loaders = window.hyvaCookieConsentLoaders || [];
+            return [
+                ...elements.map(el => el.getAttribute('data-consent-category')),
+                ...loaders.map(loader => loader.category),
+            ];
         });
 
         // All should be valid category codes
