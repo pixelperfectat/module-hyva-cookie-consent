@@ -23,7 +23,7 @@
         "source": "https://github.com/pixelperfectat/module-hyva-cookie-consent"
     },
     "require": {
-        "php": "^8.3",
+        "php": "~8.2.0 || ~8.3.0 || ~8.4.0",
         "hyva-themes/magento2-theme-module": "^1.0",
         "magento/framework": "^103.0",
         "magento/module-backend": "^102.0",
