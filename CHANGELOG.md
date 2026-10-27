@@ -12,7 +12,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Infection mutation testing, run by `composer check`.
 
 ### Changed
-- PHP 8.2 is supported again: the constraint is now `~8.2.0 || ~8.3.0 || ~8.4.0`.
+- `hyva-themes/magento2-theme-module` must be 1.3.11 or later. The consent config, floating button and service templates use the `HyvaCsp` view model, which first ships in 1.3.11, so older Hyvä versions failed on page render.
+- PHP 8.2 is supported: the constraint is now `~8.2.0 || ~8.3.0 || ~8.4.0`.
 - `magento/module-cookie` and `magento/module-csp` have version bounds instead of `*`.
 - Development tooling uses `pixelperfectat/coding-standard` 0.2, with CI through the shared `pixelperfectat/ci-templates` workflow and Renovate.
 
