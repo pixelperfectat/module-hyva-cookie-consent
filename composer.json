@@ -64,6 +64,11 @@
             "src/registration.php"
         ]
     },
+    "autoload-dev": {
+        "psr-4": {
+            "Pixelperfect\\HyvaCookieConsent\\Test\\": "Test/"
+        }
+    },
     "config": {
         "allow-plugins": {
             "cweagans/composer-patches": true,
