@@ -139,6 +139,36 @@ What a service entry does:
   `hyva_cookie_consent/services/<code>/enabled` is set (or `<enabled_by_default>` is true). The module does not
   render the template itself; load your script from your own block.
 
+### Loading your own script
+
+Load a consent-gated script from your own template and register a loader for its category. The module runs it
+once the visitor consents to that category (on the click, or on page load when consent was given earlier):
+
+```php
+<?php
+/** @var \Magento\Framework\Escaper $escaper */
+/** @var \Hyva\Theme\ViewModel\HyvaCsp $hyvaCsp */
+?>
+<script>
+    (window.hyvaCookieConsentLoaders = window.hyvaCookieConsentLoaders || []).push({
+        category: 'analytics',
+        load() {
+            // Your tracking code here
+            initCustomTracking('<?= $escaper->escapeJs($trackingId) ?>');
+        }
+    });
+</script>
+<?php $hyvaCsp->registerInlineScript() ?>
+```
+
+Render the block in `before.body.end` after `hyva.cookie.consent.config`. The script itself is an ordinary
+inline script, so `registerInlineScript()` authorises it under a strict CSP (a nonce, or a hash on cached pages).
+Scripts it loads from other hosts still need `csp_whitelist.xml` entries.
+
+The older pattern still works without a strict CSP: wrap a `<script>` in
+`<template data-consent-category="analytics">` and the module clones it into the page on consent. Under a
+strict CSP the browser blocks such a script, because it never went through `registerInlineScript()`.
+
 ## JavaScript Events
 
 ```javascript

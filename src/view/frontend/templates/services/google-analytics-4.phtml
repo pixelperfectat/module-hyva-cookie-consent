@@ -46,13 +46,17 @@ $category = $service->getCategory();
         data-consent-src="https://www.googletagmanager.com/gtag/js?id=<?= $escaper->escapeUrl($measurementId) ?>">
 </script>
 
-<template data-consent-category="<?= $escaper->escapeHtmlAttr($category) ?>">
-    <script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
-        gtag('js', new Date());
-        gtag('config', '<?= $escaper->escapeJs($measurementId) ?>', {
-            'anonymize_ip': true
-        });
-    </script>
-</template>
+<script>
+    (window.hyvaCookieConsentLoaders = window.hyvaCookieConsentLoaders || []).push({
+        category: '<?= $escaper->escapeJs($category) ?>',
+        load() {
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', '<?= $escaper->escapeJs($measurementId) ?>', {
+                'anonymize_ip': true
+            });
+        }
+    });
+</script>
+<?php $hyvaCsp->registerInlineScript() ?>

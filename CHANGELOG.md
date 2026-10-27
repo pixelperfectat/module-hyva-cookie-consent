@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Google Tag Manager (strict mode), Google Analytics 4, Facebook Pixel, Microsoft Clarity, Hotjar and Matomo were blocked by a strict Content Security Policy after consent. Their code now registers with `HyvaCsp` and runs from a consent-gated loader (`window.hyvaCookieConsentLoaders`) instead of being cloned out of a `<template>`.
+
 ### Added
 - Composer metadata (keywords, authors, homepage, support links) and the Magento modules the code uses: Store, Config, Backend and Theme.
 - Infection mutation testing, run by `composer check`.
