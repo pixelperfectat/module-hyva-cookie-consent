@@ -2,4 +2,7 @@ Test/Playwright/node_modules
 Test/Playwright/playwright-report
 Test/Playwright/test-artifacts
 .env
-
+/vendor/
+/composer.lock
+/var/
+.phpunit.result.cache

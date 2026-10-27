@@ -5,5 +5,3 @@ includes:
 parameters:
     paths:
         - src
-    excludePaths:
-        - '*.sync-conflict-*'

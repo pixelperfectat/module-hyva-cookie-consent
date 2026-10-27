@@ -1,55 +1,19 @@
 {
     "name": "pixelperfectat/module-hyva-cookie-consent",
     "description": "GDPR/ePrivacy-compliant cookie consent management for Hyva theme",
-    "type": "magento2-module",
     "license": "MIT",
-    "minimum-stability": "dev",
-    "prefer-stable": true,
+    "type": "magento2-module",
     "require": {
         "php": "^8.3",
+        "hyva-themes/magento2-theme-module": "^1.0",
         "magento/framework": "^103.0",
         "magento/module-cookie": "*",
-        "magento/module-csp": "*",
-        "hyva-themes/magento2-theme-module": "^1.0"
+        "magento/module-csp": "*"
     },
     "require-dev": {
+        "infection/infection": "^0.35",
         "phpunit/phpunit": "^9.6",
-        "pixelperfectat/coding-standard": "^0.1.0"
-    },
-    "autoload": {
-        "files": [
-            "src/registration.php"
-        ],
-        "psr-4": {
-            "Pixelperfect\\HyvaCookieConsent\\": "src/"
-        }
-    },
-    "scripts": {
-        "lint": "parallel-lint --exclude vendor --exclude generated .",
-        "cs": "phpcs",
-        "cs:fix": "phpcbf",
-        "stan": "phpstan analyse",
-        "test": "phpunit",
-        "ci:validate": "@composer validate --no-check-publish",
-        "check": [
-            "@ci:validate",
-            "@lint",
-            "@cs",
-            "@stan",
-            "@test"
-        ]
-    },
-    "config": {
-        "sort-packages": true,
-        "allow-plugins": {
-            "cweagans/composer-patches": true,
-            "dealerdirect/phpcodesniffer-composer-installer": true,
-            "ergebnis/composer-normalize": true,
-            "laminas/laminas-dependency-plugin": true,
-            "magento/*": true,
-            "php-http/discovery": true,
-            "phpstan/extension-installer": true
-        }
+        "pixelperfectat/coding-standard": "^0.2.0"
     },
     "repositories": [
         {
@@ -59,6 +23,55 @@
         {
             "type": "vcs",
             "url": "https://github.com/hyva-themes/magento2-theme-module"
+        },
+        {
+            "type": "vcs",
+            "url": "https://github.com/hyva-themes/magento2-mollie-theme-bundle"
+        },
+        {
+            "type": "vcs",
+            "url": "https://github.com/hyva-themes/magento2-compat-module-fallback"
         }
-    ]
+    ],
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "autoload": {
+        "psr-4": {
+            "Pixelperfect\\HyvaCookieConsent\\": "src/"
+        },
+        "files": [
+            "src/registration.php"
+        ]
+    },
+    "config": {
+        "allow-plugins": {
+            "cweagans/composer-patches": true,
+            "dealerdirect/phpcodesniffer-composer-installer": true,
+            "ergebnis/composer-normalize": true,
+            "infection/extension-installer": true,
+            "laminas/laminas-dependency-plugin": true,
+            "magento/*": true,
+            "php-http/discovery": true,
+            "phpstan/extension-installer": true
+        },
+        "sort-packages": true
+    },
+    "scripts": {
+        "check": [
+            "@ci:validate",
+            "@lint",
+            "@cs",
+            "@stan",
+            "@test",
+            "@infection"
+        ],
+        "ci:normalize": "@composer normalize --dry-run --diff",
+        "ci:validate": "@composer validate --no-check-publish",
+        "cs": "phpcs",
+        "cs:fix": "phpcbf",
+        "infection": "infection --with-uncovered --min-msi=85 --min-covered-msi=90 --threads=max",
+        "lint": "parallel-lint --exclude vendor --exclude generated .",
+        "stan": "phpstan analyse",
+        "test": "phpunit"
+    }
 }

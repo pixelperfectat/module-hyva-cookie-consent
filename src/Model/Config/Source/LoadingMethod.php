@@ -23,7 +23,7 @@ class LoadingMethod implements OptionSourceInterface
     /**
      * Get loading method options
      *
-     * @return array<int, array<string, string>>
+     * @return array<int, array{value: string, label: \Magento\Framework\Phrase}>
      */
     public function toOptionArray(): array
     {
