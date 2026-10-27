@@ -103,63 +103,41 @@ gtag('consent', 'update', {
 
 ### XML Configuration
 
-Categories, services, and cookies are configured via `cookie_consent.xml`. Create this file in your module's `etc/` directory:
+Categories, services and cookies are configured via `cookie_consent.xml`. Files from all modules are merged by
+`code` (categories, services, config fields) and `name` (cookies). Add the file to your module's `etc/` directory,
+for example to list the cookies of a third-party script in an existing category:
 
 ```xml
 <?xml version="1.0"?>
-<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:noNamespaceSchemaLocation="urn:magento:module:Pixelperfect_HyvaCookieConsent:etc/cookie_consent.xsd">
-
-    <!-- Add a custom category -->
-    <category code="social">
-        <title>Social Media</title>
-        <description>Enable social media integrations</description>
-        <required>false</required>
-        <sort_order>50</sort_order>
-    </category>
-
-    <!-- Add a custom service -->
-    <service code="custom_tracking">
-        <title>Custom Tracking</title>
-        <description>Our custom analytics service</description>
-        <category>analytics</category>
-        <template>Vendor_Module::services/custom.phtml</template>
-        <enabled_by_default>false</enabled_by_default>
-        <cookies>
-            <cookie name="_custom">
-                <description>Custom tracking ID</description>
-                <duration>1 year</duration>
-            </cookie>
-        </cookies>
-    </service>
-</config>
+<cookie_consent xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                xsi:noNamespaceSchemaLocation="urn:magento:module:Pixelperfect_HyvaCookieConsent:etc/cookie_consent.xsd">
+    <services>
+        <service code="custom_tracking" category="analytics">
+            <title>Custom Tracking</title>
+            <description>Our custom analytics service</description>
+            <cookies>
+                <cookie name="_custom" duration="1 year">
+                    <description>Custom tracking ID</description>
+                </cookie>
+                <cookie name="_custom_*" duration="1 day">
+                    <description>Session state (wildcards are allowed)</description>
+                </cookie>
+            </cookies>
+        </service>
+    </services>
+</cookie_consent>
 ```
 
-### Service Template Example
+The schema is `src/etc/cookie_consent.xsd`. `code`, `category`, cookie `name` and `duration` are attributes;
+`required` and `sort_order` are attributes of `<category>`.
 
-Create a template that respects consent blocking:
-
-```php
-<?php
-// Vendor/Module/view/frontend/templates/services/custom.phtml
-
-$service = $block->getData('service');
-$trackingId = $service->getConfigValue('tracking_id');
-
-if (empty($trackingId)) {
-    return;
-}
-
-$category = $service->getCategory();
-?>
-
-<template data-consent-category="<?= $escaper->escapeHtmlAttr($category) ?>">
-    <script>
-        // Your tracking code here
-        initCustomTracking('<?= $escaper->escapeJs($trackingId) ?>');
-    </script>
-</template>
-```
+What a service entry does:
+- Its cookies appear in the banner's cookie table, and `hyva.setCookie()` holds them back until the service's
+  category is accepted.
+- When consent for the category is revoked, first-party cookies matching the names are deleted.
+- A service without `<template>` is informational and always listed. With `<template>`, it's listed only while
+  `hyva_cookie_consent/services/<code>/enabled` is set (or `<enabled_by_default>` is true). The module does not
+  render the template itself; load your script from your own block.
 
 ## JavaScript Events
 
