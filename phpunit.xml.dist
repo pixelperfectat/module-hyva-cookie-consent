@@ -15,6 +15,7 @@
         <include>
             <directory suffix=".php">src/Model</directory>
             <directory suffix=".php">src/Observer</directory>
+            <directory suffix=".php">src/Plugin</directory>
             <directory suffix=".php">src/ViewModel</directory>
         </include>
     </coverage>

@@ -5,13 +5,9 @@
         <!-- General Cookie Consent Settings (under Web section) -->
         <web>
             <!--
-                Enable Magento's cookie restriction mode.
-                This is required for Hyvä's hyva.setCookie() to block cookies until consent.
-                We remove Magento's default cookie notice via layout XML and use our own banner.
+                Cookie restriction mode is not set here: Plugin\EnforceCookieRestrictionPlugin turns it on
+                only while hyva_cookie_consent/general/enabled is on, so a disabled module changes nothing.
             -->
-            <cookie>
-                <cookie_restriction>1</cookie_restriction>
-            </cookie>
             <hyva_cookie_consent>
                 <general>
                     <enabled>0</enabled>

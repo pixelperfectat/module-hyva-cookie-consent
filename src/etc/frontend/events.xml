@@ -1,6 +1,10 @@
 <?xml version="1.0"?>
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="urn:magento:framework:Event/etc/events.xsd">
+    <event name="layout_load_before">
+        <observer name="Pixelperfect_HyvaCookieConsent_EnabledLayoutHandle"
+                  instance="Pixelperfect\HyvaCookieConsent\Observer\AddEnabledLayoutHandle"/>
+    </event>
     <event name="hyva_config_generate_before">
         <observer name="Pixelperfect_HyvaCookieConsent"
                   instance="Pixelperfect\HyvaCookieConsent\Observer\RegisterModuleForHyvaConfig"/>

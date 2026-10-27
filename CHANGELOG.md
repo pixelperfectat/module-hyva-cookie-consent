@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Fixed
+- Installing the module changed the shop even while "Enable Cookie Consent" was off: it forced Magento's cookie restriction mode on and removed the native cookie notice and Google Analytics blocks, so a disabled module left Hyvä blocking cookies with no banner. All three now apply only while the module is enabled. Restriction mode comes from a plugin on `Magento\Cookie\Helper\Cookie` instead of a `config.xml` default, and the block removals live in the `hyva_cookie_consent_enabled` layout handle.
 - Google Tag Manager (strict mode), Google Analytics 4, Facebook Pixel, Microsoft Clarity, Hotjar and Matomo were blocked by a strict Content Security Policy after consent. Their code now registers with `HyvaCsp` and runs from a consent-gated loader (`window.hyvaCookieConsentLoaders`) instead of being cloned out of a `<template>`.
 
 ### Added

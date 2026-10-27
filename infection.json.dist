@@ -4,6 +4,7 @@
         "directories": [
             "src/Model",
             "src/Observer",
+            "src/Plugin",
             "src/ViewModel"
         ]
     },

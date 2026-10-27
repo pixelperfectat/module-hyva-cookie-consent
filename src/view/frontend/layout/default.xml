@@ -3,21 +3,9 @@
       xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
     <body>
         <!--
-            Remove Magento's native Google Analytics block.
-            When using this cookie consent module, GA should be loaded via:
-            - GTM (with consent-aware triggers), or
-            - Our GA4 service template (which respects consent)
-            This prevents GA cookies from being set before consent.
+            The removals of Magento's cookie notice and Google Analytics blocks are in
+            hyva_cookie_consent_enabled.xml, a handle added only while the module is enabled.
         -->
-        <referenceBlock name="google_analytics" remove="true"/>
-
-        <!--
-            Remove Magento's default cookie notice.
-            We enable web/cookie/cookie_restriction in config.xml to make Hyvä's
-            hyva.setCookie() block cookies until consent, but we replace Magento's
-            native notice with our own comprehensive cookie consent banner.
-        -->
-        <referenceBlock name="cookie_notices" remove="true"/>
 
         <!-- Cookie Consent Configuration Script (must come before banner) -->
         <referenceContainer name="before.body.end">
