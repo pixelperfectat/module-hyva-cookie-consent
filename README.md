@@ -97,6 +97,11 @@ only through GTM, disable it here.
    loaders of the consented categories run. On later page views this happens straight away from the saved cookie.
 4. When a category is withdrawn, first-party cookies matching that category's cookie names (wildcards such as `_ga_*`
    included) are deleted.
+5. Magento's own consent cookie `user_allowed_save_cookie` (`{"<websiteId>":1}`), which other modules and Magento's
+   cookie restriction mode read, is kept in step: it is set only while every optional category is granted, and
+   removed after Reject All, a partial choice or a withdrawal. It is all-or-nothing and its readers know nothing about
+   categories, so it never says yes to more than the visitor allowed. Visitors who accepted everything before this
+   behaviour existed get it on their next page view.
 
 ### Google Consent Mode v2
 
@@ -248,8 +253,8 @@ window.dispatchEvent(new CustomEvent('open-cookie-settings'));
   blockable.
 - **Hyvä's own consent lists are replaced, not merged.** The module assigns `window.cookie_consent_config` and
   `window.cookie_consent_groups`, so entries Hyvä or other modules put there before (for example `last_visited_store`)
-  are lost. Cookies that are in no category fall back to Magento's `user_allowed_save_cookie`, which this module never
-  sets, so `hyva.setCookie()` keeps holding them back even after Accept All.
+  are lost. Cookies that are in no category fall back to Magento's `user_allowed_save_cookie`, which this module sets
+  only when every optional category is granted, so `hyva.setCookie()` holds them back after a partial choice.
 - **GTM infrastructure mode ignores the consent version.** Its `consent_default` event reports the saved choice even
   when the consent version has changed (the Consent Mode default does check the version).
 - **The Consent Mode default is set at the end of the body**, ahead of the bundled GTM/GA4 code but after anything
