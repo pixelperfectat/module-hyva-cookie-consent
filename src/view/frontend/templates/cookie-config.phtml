@@ -78,6 +78,7 @@ $cookieDeletionPatterns = $consentViewModel->getCookiePatternsForDeletionJson();
     // Alpine.js component initialization function - CSP Strict compatible
     function initHyvaCookieConsent() {
         const COOKIE_NAME = 'hyva_cookie_consent';
+        const MAGENTO_CONSENT_COOKIE = 'user_allowed_save_cookie';
         const CONSENT_VERSION = <?= (int) $consentVersion ?>;
         const COOKIE_LIFETIME = <?= (int) $cookieLifetime ?>;
         const GTM_INFRASTRUCTURE_MODE = <?= $gtmInfrastructureMode ? 'true' : 'false' ?>;
@@ -214,6 +215,9 @@ $cookieDeletionPatterns = $consentViewModel->getCookiePatternsForDeletionJson();
                 // Delete cookies for categories where consent was revoked
                 this.deleteRevokedCookies(previousConsent, this.consent);
 
+                // Keep Magento's own consent signal in step, before anyone reacts to the events below
+                this.syncMagentoConsentCookie();
+
                 // Dispatch event for Hyva's cookie system
                 window.dispatchEvent(new CustomEvent('user-allowed-save-cookie'));
 
@@ -306,6 +310,41 @@ $cookieDeletionPatterns = $consentViewModel->getCookiePatternsForDeletionJson();
              * - Third-party cookies (different domain) cannot be deleted
              * - Some cookies may be on different paths than tried
              */
+
+            /**
+             * Magento's consent signal (user_allowed_save_cookie, {"<websiteId>":1}) is all-or-nothing, and
+             * the modules that read it (trackers, recommendations) don't know these categories. It is set
+             * only while every optional category is granted and removed otherwise, so it never says yes to
+             * more than the visitor allowed. Other websites' entries in the cookie are kept.
+             */
+            syncMagentoConsentCookie() {
+                if (typeof window.CURRENT_WEBSITE_ID === 'undefined') {
+                    return;
+                }
+                const allGranted = Object.keys(this.consent).every(category => this.consent[category] === true);
+
+                let websites = {};
+                const current = hyva.getCookie(MAGENTO_CONSENT_COOKIE);
+                if (current) {
+                    try {
+                        websites = JSON.parse(decodeURIComponent(current)) || {};
+                    } catch (e) {
+                        websites = {};
+                    }
+                }
+
+                if (allGranted) {
+                    websites[window.CURRENT_WEBSITE_ID] = 1;
+                } else {
+                    delete websites[window.CURRENT_WEBSITE_ID];
+                }
+
+                if (Object.keys(websites).length > 0) {
+                    hyva.setCookie(MAGENTO_CONSENT_COOKIE, JSON.stringify(websites), COOKIE_LIFETIME);
+                } else {
+                    this.deleteCookie(MAGENTO_CONSENT_COOKIE);
+                }
+            },
 
             /**
              * Delete a cookie by name, trying multiple paths and domains

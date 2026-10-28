@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Magento's own consent cookie `user_allowed_save_cookie` was never set, so modules that read it, such as tracking extensions, never saw consent, even after Accept All ([#4](https://github.com/pixelperfectat/module-hyva-cookie-consent/issues/4)). It is now set in Magento's format when every optional category is granted and removed after Reject All, a partial choice or a withdrawal. Visitors who accepted everything earlier get it on their next page view.
+
+### Changed
+- After Accept All, Magento's own Google tags (GA4 and Google Ads from the Google API settings) now run, because they read `user_allowed_save_cookie`. Configure GA4 either there or in this module's Google Analytics 4 service, not both. Gating them by category is planned ([#9](https://github.com/pixelperfectat/module-hyva-cookie-consent/issues/9)).
+
 ## [0.4.0] - 2026-10-28
 
 ### Added
