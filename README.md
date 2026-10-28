@@ -1,5 +1,10 @@
 # Pixelperfect Hyvä Cookie Consent
 
+[![CI](https://github.com/pixelperfectat/module-hyva-cookie-consent/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/pixelperfectat/module-hyva-cookie-consent/actions/workflows/ci.yml)
+[![Packagist version](https://img.shields.io/packagist/v/pixelperfectat/module-hyva-cookie-consent)](https://packagist.org/packages/pixelperfectat/module-hyva-cookie-consent)
+[![PHP](https://img.shields.io/packagist/dependency-v/pixelperfectat/module-hyva-cookie-consent/php)](composer.json)
+[![License: MIT](https://img.shields.io/packagist/l/pixelperfectat/module-hyva-cookie-consent)](LICENSE)
+
 GDPR/ePrivacy cookie consent banner for Magento 2 shops on the Hyvä theme, with Google Consent Mode v2 and
 consent-gated tracking integrations.
 
