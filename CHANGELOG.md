@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.1] - 2026-10-28
+
 ### Fixed
 - Magento's own consent cookie `user_allowed_save_cookie` was never set, so modules that read it, such as tracking extensions, never saw consent, even after Accept All ([#4](https://github.com/pixelperfectat/module-hyva-cookie-consent/issues/4)). It is now set in Magento's format when every optional category is granted and removed after Reject All, a partial choice or a withdrawal. Visitors who accepted everything earlier get it on their next page view.
 
@@ -78,7 +80,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Modal and bar banner styles
 - Admin configuration for banner customization
 
-[Unreleased]: https://github.com/pixelperfectat/module-hyva-cookie-consent/compare/0.4.0...HEAD
+[Unreleased]: https://github.com/pixelperfectat/module-hyva-cookie-consent/compare/0.4.1...HEAD
+[0.4.1]: https://github.com/pixelperfectat/module-hyva-cookie-consent/compare/0.4.0...0.4.1
 [0.4.0]: https://github.com/pixelperfectat/module-hyva-cookie-consent/compare/0.3.0...0.4.0
 [0.3.0]: https://github.com/pixelperfectat/module-hyva-cookie-consent/compare/0.2.0...0.3.0
 [0.2.0]: https://github.com/pixelperfectat/module-hyva-cookie-consent/compare/0.1.0...0.2.0
