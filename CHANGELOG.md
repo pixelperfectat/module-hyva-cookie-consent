@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-10-28
+
 ### Added
 - Composer metadata (keywords, authors, homepage, support links) and the Magento modules the code uses: Store, Config, Backend and Theme.
 - Infection mutation testing, run by `composer check`.
@@ -70,7 +72,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Modal and bar banner styles
 - Admin configuration for banner customization
 
-[Unreleased]: https://github.com/pixelperfectat/module-hyva-cookie-consent/compare/0.3.0...HEAD
+[Unreleased]: https://github.com/pixelperfectat/module-hyva-cookie-consent/compare/0.4.0...HEAD
+[0.4.0]: https://github.com/pixelperfectat/module-hyva-cookie-consent/compare/0.3.0...0.4.0
 [0.3.0]: https://github.com/pixelperfectat/module-hyva-cookie-consent/compare/0.2.0...0.3.0
 [0.2.0]: https://github.com/pixelperfectat/module-hyva-cookie-consent/compare/0.1.0...0.2.0
 [0.1.0]: https://github.com/pixelperfectat/module-hyva-cookie-consent/releases/tag/0.1.0
