@@ -270,6 +270,9 @@ window.dispatchEvent(new CustomEvent('open-cookie-settings'));
 - **The Consent Mode default is set at the end of the body**, ahead of the bundled GTM/GA4 code but after anything
   another module or theme puts in `<head>`.
 - **The cookie table lists the consent cookie as "1 year"**, whatever Consent Cookie Lifetime says.
+- **Nothing is rendered on pages with a non-Hyvä theme**, such as a Luma checkout served by Hyvä's theme fallback.
+  The banner and the services need Hyvä, so the services don't run there either, even after consent. A visitor who
+  hasn't chosen yet sees the banner on their next Hyvä page.
 - **No REST or GraphQL API**: headless storefronts are not supported.
 - **Upgrading from 0.3.0 or earlier:** those versions set Cookie Restriction Mode to Yes as a module default. If you
   saved the Web configuration page meanwhile, Magento stored that Yes; set it back yourself if you don't want it once the

@@ -4,6 +4,8 @@
     <event name="layout_load_before">
         <observer name="Pixelperfect_HyvaCookieConsent_EnabledLayoutHandle"
                   instance="Pixelperfect\HyvaCookieConsent\Observer\AddEnabledLayoutHandle"/>
+        <observer name="Pixelperfect_HyvaCookieConsent_NonHyvaThemeLayoutHandle"
+                  instance="Pixelperfect\HyvaCookieConsent\Observer\AddNonHyvaThemeLayoutHandle"/>
     </event>
     <event name="hyva_config_generate_before">
         <observer name="Pixelperfect_HyvaCookieConsent"
