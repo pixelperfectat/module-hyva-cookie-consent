@@ -60,16 +60,36 @@ class AddNonHyvaThemeLayoutHandleTest extends TestCase
         self::assertSame([], $this->handles);
     }
 
-    public function testTheHandleRemovesEveryBlockDefaultXmlAdds(): void
+    public function testTheHandleRemovesEveryBlockTheModuleLayoutAdds(): void
     {
         $layoutDir = __DIR__ . '/../../../src/view/frontend/layout/';
-        $default = (string) file_get_contents($layoutDir . 'default.xml');
-        $handle = (string) file_get_contents($layoutDir . AddNonHyvaThemeLayoutHandle::HANDLE . '.xml');
+        $handleFile = $layoutDir . AddNonHyvaThemeLayoutHandle::HANDLE . '.xml';
 
-        preg_match_all('/<block name="([^"]+)"/', $default, $blocks);
-        self::assertNotEmpty($blocks[1]);
-        foreach ($blocks[1] as $block) {
-            self::assertStringContainsString('<referenceBlock name="' . $block . '" remove="true"/>', $handle);
+        $added = [];
+        foreach (glob($layoutDir . '*.xml') ?: [] as $file) {
+            if ($file !== $handleFile) {
+                $added = array_merge($added, $this->attributeValues($file, '//block/@name'));
+            }
         }
+        $removed = $this->attributeValues($handleFile, '//referenceBlock[@remove="true"]/@name');
+
+        self::assertNotEmpty($added);
+        self::assertSame([], array_values(array_diff($added, $removed)), 'Blocks not removed on non-Hyva pages');
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    private function attributeValues(string $file, string $xpath): array
+    {
+        $document = new \DOMDocument();
+        self::assertTrue($document->load($file), 'Cannot parse ' . $file);
+
+        $values = [];
+        foreach ((new \DOMXPath($document))->query($xpath) ?: [] as $node) {
+            $values[] = (string) $node->nodeValue;
+        }
+
+        return $values;
     }
 }
