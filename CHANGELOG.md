@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.2] - 2026-11-06
+
 ### Fixed
 - On pages rendered with a non-Hyvä theme, such as a checkout that Hyvä's theme fallback (`hyva-themes/magento2-luma-checkout`) serves with Luma, the banner, the settings button and the service scripts showed as plain text below the page, with buttons that did nothing. They need Alpine.js and Hyvä's JavaScript, so they are now removed on those pages by the `hyva_cookie_consent_non_hyva_theme` layout handle ([#15](https://github.com/pixelperfectat/module-hyva-cookie-consent/pull/15), thanks @nshubitidze).
 
