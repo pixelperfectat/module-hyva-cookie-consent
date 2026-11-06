@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<!--
+    Added by Observer\AddNonHyvaThemeLayoutHandle on pages that are not rendered with a Hyva theme.
+-->
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <referenceBlock name="hyva.cookie.consent.config" remove="true"/>
+        <referenceBlock name="hyva.cookie.consent.banner" remove="true"/>
+        <referenceBlock name="hyva.cookie.consent.floating.button" remove="true"/>
+        <referenceBlock name="hyva.cookie.consent.service.gtm" remove="true"/>
+        <referenceBlock name="hyva.cookie.consent.service.ga4" remove="true"/>
+        <referenceBlock name="hyva.cookie.consent.service.fb" remove="true"/>
+        <referenceBlock name="hyva.cookie.consent.service.clarity" remove="true"/>
+        <referenceBlock name="hyva.cookie.consent.service.hotjar" remove="true"/>
+        <referenceBlock name="hyva.cookie.consent.service.matomo" remove="true"/>
+    </body>
+</page>
