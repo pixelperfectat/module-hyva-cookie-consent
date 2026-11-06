@@ -1,12 +1,13 @@
 name: CI
 
 # Pipeline is maintained centrally in the public pixelperfectat/ci-templates reusable workflow.
-# Required org/repo secrets: MAGENTO_PUBLIC_KEY, MAGENTO_PRIVATE_KEY.
+# Optional secrets: MAGENTO_PUBLIC_KEY, MAGENTO_PRIVATE_KEY. Without them (pull requests from forks)
+# the workflow installs magento/* from the public Mage-OS mirror.
 on:
   push:
   pull_request:
 
 jobs:
   ci:
-    uses: pixelperfectat/ci-templates/.github/workflows/magento-module.yml@0.5.0
+    uses: pixelperfectat/ci-templates/.github/workflows/magento-module.yml@0.6.0
     secrets: inherit
